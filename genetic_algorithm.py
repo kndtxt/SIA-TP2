@@ -26,8 +26,13 @@ class GeneticAlgorithm:
 
     def _calculate_population_fitness(self):
         """Calcula el fitness para cada individuo en la población."""
+        max_fitness = 0.0
         for individual in tqdm(self.population, desc="Calculando Fitness"):
             individual.calculate_fitness(self.target_image)
+            if individual.fitness > max_fitness:
+                max_fitness = individual.fitness
+        for individual in tqdm(self.population, desc="Calculando Relative-Fitness"):
+            individual.calculate_relative_fitness(self, max_fitness)
     
     def _sort_population(self):
         """Ordena la población por fitness, de mejor a peor."""
@@ -35,12 +40,11 @@ class GeneticAlgorithm:
 
     def _selection_roulette(self) -> Individual:
         """Selección por Ruleta."""
-        total_fitness = sum(ind.fitness for ind in self.population)
-        pick = random.uniform(0, total_fitness)
-        current = 0
+        pick = random.uniform(0, 1)
+        current = 0.0
         for ind in self.population:
-            current += ind.fitness
-            if current > pick:
+            current += ind.relative_fitness
+            if pick <= current:
                 return ind
         return self.population[-1]
 
@@ -49,12 +53,20 @@ class GeneticAlgorithm:
         tournament = random.sample(self.population, tournament_size)
         return max(tournament, key=lambda ind: ind.fitness)
     
+    def _selection_ranking(self) -> Individual:
+        """Selección por Ranking."""
+        sorted_population = sorted(self.population, key=lambda ind: ind.fitness, reverse=True)
+        n = len(sorted_population)
+        pseudo_fitness = [(n - rank) / n for rank in range(n)]
+
+        return 
+    
     def _crossover_one_point(self, parent1: Individual, parent2: Individual) -> List[Individual]:
         """Cruce de un solo punto."""
         child1 = Individual(self.num_triangles, self.width, self.height)
         child2 = Individual(self.num_triangles, self.width, self.height)
         
-        crossover_point = random.randint(1, self.num_triangles - 1)
+        crossover_point = random.randint(1, self.num_triangles - 1)#TODO: 😔👌✨solo triangulos??
         
         child1.chromosome = copy.deepcopy(parent1.chromosome[:crossover_point] + parent2.chromosome[crossover_point:])
         child2.chromosome = copy.deepcopy(parent2.chromosome[:crossover_point] + parent1.chromosome[crossover_point:])

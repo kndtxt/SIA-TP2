@@ -18,6 +18,7 @@ class Individual:
             Triangle.create_random(img_width, img_height) for _ in range(num_triangles)
         ]
         self.fitness = -1.0
+        self.relative_fitness = -1.0
         self._image: Image.Image = None
 
     @property
@@ -30,6 +31,10 @@ class Individual:
     def calculate_fitness(self, target_image: Image.Image):
         """Calcula y almacena la aptitud del individuo."""
         self.fitness = calculate_fitness(self.image, target_image)
+
+    def calculate_relative_fitness(self, max_fitness):
+        """Calcula y almacena la aptitud del relativa individuo."""
+        self.relative_fitness = self.fitness/max_fitness
     
     def mutate_gene(self):
         """
