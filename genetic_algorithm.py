@@ -134,7 +134,7 @@ class GeneticAlgorithm:
         # 3. Ordenar por fitness y seleccionar N al azar
         self.population = random.sample(combined_population, self.pop_size)
 
-    def run_generation(self):
+    def run_generation(self, selection_method, crossover_method):
         """Ejecuta un ciclo completo de una generación."""
         self._calculate_population_fitness()
         self._calculate_population_ranking_pseudo_fitness()
@@ -150,7 +150,7 @@ class GeneticAlgorithm:
             parent2 = self._selection_roulette()
 
             # Cruzar padres para crear hijos
-            children = self._crossover_one_point(parent1, parent2)
+            children = crossover_method(self, parent1, parent2)
             
             # Mutar hijos
             for child in children:

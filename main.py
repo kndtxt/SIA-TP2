@@ -28,7 +28,7 @@ SELECTION_METHOD = any
 CROSSOVER_METHOD = any
 
 
-with open('run_config.json', 'r') as f:
+with open('./configs/run_config.json', 'r') as f:
     config = json.load(f)
     TARGET_IMAGE_PATH = config.get("TARGET_IMAGE_PATH", TARGET_IMAGE_PATH)
     OUTPUT_DIR = config.get("OUTPUT_DIR", OUTPUT_DIR)
@@ -36,7 +36,6 @@ with open('run_config.json', 'r') as f:
     POPULATION_SIZE = config.get("POPULATION_SIZE", POPULATION_SIZE)
     NUM_TRIANGLES = config.get("NUM_TRIANGLES", NUM_TRIANGLES)
     NUM_GENERATIONS = config.get("NUM_GENERATIONS", NUM_GENERATIONS)
-    ELITISM_COUNT = config.get("ELITISM_COUNT", ELITISM_COUNT)
     MUTATION_RATE = config.get("MUTATION_RATE", MUTATION_RATE)
     SELECTION_METHOD = config.get("SELECTION_CONFIG", SELECTION_METHOD)
     if SELECTION_METHOD == "boltzmann":
