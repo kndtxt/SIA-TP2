@@ -76,32 +76,32 @@ class GeneticAlgorithm:
                 return ind
         return self.population[-1]
     
-    def _crossover_one_point(self, parent1: Individual, parent2: Individual) -> List[Individual]:
-        """Cruce de un solo punto."""
-        child1 = Individual(self.num_triangles, self.width, self.height)
-        child2 = Individual(self.num_triangles, self.width, self.height)
+    # def _crossover_one_point(self, parent1: Individual, parent2: Individual) -> List[Individual]:
+    #     """Cruce de un solo punto."""
+    #     child1 = Individual(self.num_triangles, self.width, self.height)
+    #     child2 = Individual(self.num_triangles, self.width, self.height)
         
-        crossover_point = random.randint(1, self.num_triangles - 1)#TODO: 😔👌✨solo triangulos??
+    #     crossover_point = random.randint(1, self.num_triangles - 1)
         
-        child1.chromosome = copy.deepcopy(parent1.chromosome[:crossover_point] + parent2.chromosome[crossover_point:])
-        child2.chromosome = copy.deepcopy(parent2.chromosome[:crossover_point] + parent1.chromosome[crossover_point:])
+    #     child1.chromosome = copy.deepcopy(parent1.chromosome[:crossover_point] + parent2.chromosome[crossover_point:])
+    #     child2.chromosome = copy.deepcopy(parent2.chromosome[:crossover_point] + parent1.chromosome[crossover_point:])
         
-        return [child1, child2]
+    #     return [child1, child2]
 
-    def _crossover_uniform(self, parent1: Individual, parent2: Individual) -> List[Individual]:
-        """Cruce uniforme."""
-        child1 = Individual(self.num_triangles, self.width, self.height)
-        child2 = Individual(self.num_triangles, self.width, self.height)
+    # def _crossover_uniform(self, parent1: Individual, parent2: Individual) -> List[Individual]:
+    #     """Cruce uniforme."""
+    #     child1 = Individual(self.num_triangles, self.width, self.height)
+    #     child2 = Individual(self.num_triangles, self.width, self.height)
 
-        for i in range(self.num_triangles):
-            if random.random() < 0.5:
-                child1.chromosome[i] = copy.deepcopy(parent1.chromosome[i])
-                child2.chromosome[i] = copy.deepcopy(parent2.chromosome[i])
-            else:
-                child1.chromosome[i] = copy.deepcopy(parent2.chromosome[i])
-                child2.chromosome[i] = copy.deepcopy(parent1.chromosome[i])
+    #     for i in range(self.num_triangles):
+    #         if random.random() < 0.5:
+    #             child1.chromosome[i] = copy.deepcopy(parent1.chromosome[i])
+    #             child2.chromosome[i] = copy.deepcopy(parent2.chromosome[i])
+    #         else:
+    #             child1.chromosome[i] = copy.deepcopy(parent2.chromosome[i])
+    #             child2.chromosome[i] = copy.deepcopy(parent1.chromosome[i])
         
-        return [child1, child2]
+    #     return [child1, child2]
 
     def run_generation_traditional(self):
         """Ejecuta un ciclo completo de una generación."""
