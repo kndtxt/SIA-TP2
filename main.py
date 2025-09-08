@@ -14,7 +14,6 @@ RESIZE_FACTOR = 1  # Reducir la imagen para que el proceso sea más rápido (ej.
 POPULATION_SIZE = 50
 NUM_TRIANGLES = 50
 NUM_GENERATIONS = 1000
-ELITISM_COUNT = 5     # Cuántos de los mejores individuos sobreviven automáticamente
 MUTATION_RATE = 0.8   # Probabilidad de que un nuevo individuo mute
 
 def main():
@@ -39,7 +38,6 @@ def main():
         target_image=target_image,
         pop_size=POPULATION_SIZE,
         num_triangles=NUM_TRIANGLES,
-        elitism_count=ELITISM_COUNT,
         mutation_rate=MUTATION_RATE
     )
 
