@@ -33,6 +33,20 @@ class GeneticAlgorithm:
                 max_fitness = individual.fitness
         for individual in tqdm(self.population, desc="Calculando Relative-Fitness"):
             individual.calculate_relative_fitness(self, max_fitness)
+
+    def _calculate_population_ranking_pseudo_fitness(self):
+        """Calcula el pseudo-fitness de ranking para cada individuo en la población."""
+        sorted_population = sorted(self.population, key=lambda ind: ind.fitness, reverse=True)
+        n = len(sorted_population)
+
+        max_fitness = 0.0
+        for rank, individual in enumerate(sorted_population):
+            individual.pseudo_fitness = (n - (rank + 1)) / n
+            if max_fitness < individual.pseudo_fitness:
+                max_fitness = individual.pseudo_fitness
+                
+        for individual in sorted_population:
+            individual.relative_pseudo_fitness = individual.pseudo_fitness / max_fitness
     
     def _sort_population(self):
         """Ordena la población por fitness, de mejor a peor."""
@@ -55,11 +69,13 @@ class GeneticAlgorithm:
     
     def _selection_ranking(self) -> Individual:
         """Selección por Ranking."""
-        sorted_population = sorted(self.population, key=lambda ind: ind.fitness, reverse=True)
-        n = len(sorted_population)
-        pseudo_fitness = [(n - rank) / n for rank in range(n)]
-
-        return 
+        pick = random.uniform(0, 1)
+        current = 0.0
+        for ind in self.population:
+            current += ind.relative_pseudo_fitness
+            if pick <= current:
+                return ind
+        return self.population[-1]
     
     def _crossover_one_point(self, parent1: Individual, parent2: Individual) -> List[Individual]:
         """Cruce de un solo punto."""
@@ -91,6 +107,7 @@ class GeneticAlgorithm:
     def run_generation(self):
         """Ejecuta un ciclo completo de una generación."""
         self._calculate_population_fitness()
+        self._calculate_population_ranking_pseudo_fitness()
         self._sort_population()
         
         new_population = []
