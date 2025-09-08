@@ -32,7 +32,7 @@ class GeneticAlgorithm:
             if individual.fitness > max_fitness:
                 max_fitness = individual.fitness
         for individual in tqdm(self.population, desc="Calculando Relative-Fitness"):
-            individual.calculate_relative_fitness(self, max_fitness)
+            individual.calculate_relative_fitness(max_fitness)
 
     def _calculate_population_ranking_pseudo_fitness(self):
         """Calcula el pseudo-fitness de ranking para cada individuo en la población."""
@@ -44,7 +44,7 @@ class GeneticAlgorithm:
             individual.pseudo_fitness = (n - (rank + 1)) / n
             if max_fitness < individual.pseudo_fitness:
                 max_fitness = individual.pseudo_fitness
-                
+
         for individual in sorted_population:
             individual.relative_pseudo_fitness = individual.pseudo_fitness / max_fitness
     
@@ -119,8 +119,8 @@ class GeneticAlgorithm:
         # 2. Creación de nueva descendencia
         while len(new_population) < self.pop_size:
             # Seleccionar padres
-            parent1 = self._selection_tournament()
-            parent2 = self._selection_tournament()
+            parent1 = self._selection_roulette()
+            parent2 = self._selection_roulette()
             
             # Cruzar padres para crear hijos
             # Puedes cambiar a _crossover_uniform aquí para probar

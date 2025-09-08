@@ -11,10 +11,10 @@ OUTPUT_DIR = "images/output"            # Carpeta para guardar resultados
 RESIZE_FACTOR = 1  # Reducir la imagen para que el proceso sea más rápido (ej. 0.25 = 1/4 del tamaño)
 
 # Parámetros del Algoritmo Genético
-POPULATION_SIZE = 250
+POPULATION_SIZE = 50
 NUM_TRIANGLES = 50
-NUM_GENERATIONS = 5000
-ELITISM_COUNT = 25     # Cuántos de los mejores individuos sobreviven automáticamente
+NUM_GENERATIONS = 1000
+ELITISM_COUNT = 5     # Cuántos de los mejores individuos sobreviven automáticamente
 MUTATION_RATE = 0.8   # Probabilidad de que un nuevo individuo mute
 
 def main():
