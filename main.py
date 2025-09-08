@@ -12,6 +12,7 @@ RESIZE_FACTOR = 1  # Reducir la imagen para que el proceso sea más rápido (ej.
 
 # Parámetros del Algoritmo Genético
 POPULATION_SIZE = 50
+K_SIZE = 25
 NUM_TRIANGLES = 50
 NUM_GENERATIONS = 1000
 MUTATION_RATE = 0.8   # Probabilidad de que un nuevo individuo mute
@@ -37,6 +38,7 @@ def main():
     ga = GeneticAlgorithm(
         target_image=target_image,
         pop_size=POPULATION_SIZE,
+        k=K_SIZE,
         num_triangles=NUM_TRIANGLES,
         mutation_rate=MUTATION_RATE
     )

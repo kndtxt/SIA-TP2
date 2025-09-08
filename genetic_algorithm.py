@@ -9,10 +9,11 @@ class GeneticAlgorithm:
     """
     Motor del algoritmo genético para evolucionar imágenes.
     """
-    def __init__(self, target_image, pop_size: int, num_triangles: int, mutation_rate: float):
+    def __init__(self, target_image, pop_size: int, k: int, num_triangles: int, mutation_rate: float):
         self.target_image = target_image
         self.width, self.height = target_image.size
         self.pop_size = pop_size
+        self.k = k
         self.num_triangles = num_triangles
         self.mutation_rate = mutation_rate
         
@@ -102,7 +103,7 @@ class GeneticAlgorithm:
         
         return [child1, child2]
 
-    def run_generation(self):
+    def run_generation_traditional(self):
         """Ejecuta un ciclo completo de una generación."""
         self._calculate_population_fitness()
         self._calculate_population_ranking_pseudo_fitness()
@@ -110,9 +111,9 @@ class GeneticAlgorithm:
         
         new_population = []
 
-        """Ejecuta una generación usando reemplazo tradicional: N padres + K hijos → seleccionar N mejores."""
+        """Ejecuta una generación usando reemplazo tradicional: N padres + K hijos → seleccionar N."""
         #1. Generar K hijos
-        while len(new_population) < self.pop_size:
+        while len(new_population) < self.k:
             # Seleccionar padres
             parent1 = self._selection_roulette()
             parent2 = self._selection_roulette()
@@ -124,20 +125,49 @@ class GeneticAlgorithm:
             for child in children:
                 if random.random() < self.mutation_rate:
                     child.mutate_gene()
-                if len(new_population) < self.pop_size:
+                if len(new_population) < self.k:
                     new_population.append(child)
 
-        #2. Calcular fitness de los hijos (si es al azar el item 4 entonces este ya no hace falta)
-        #for child in tqdm(new_population, desc="Calculando Fitness de Hijos"):
-        #    child.calculate_fitness(self.target_image)
-
-        # 3. Combinar padres + hijos
+        # 2. Combinar padres + hijos
         combined_population = self.population + new_population
 
-        # 4. Ordenar por fitness y seleccionar N al azar
-        #combined_population.sort(key=lambda ind: ind.fitness, reverse=True)
-        #self.population = combined_population[:self.pop_size]
+        # 3. Ordenar por fitness y seleccionar N al azar
         self.population = random.sample(combined_population, self.pop_size)
+
+    def run_generation(self):
+        """Ejecuta un ciclo completo de una generación."""
+        self._calculate_population_fitness()
+        self._calculate_population_ranking_pseudo_fitness()
+        self._sort_population()
+        
+        new_population = []
+
+        """Ejecuta una generación usando reemplazo de sesgo joven: N padres + K hijos → seleccionar N mejores."""
+        #1. Generar K hijos
+        while len(new_population) < self.k:
+            # Seleccionar padres
+            parent1 = self._selection_roulette()
+            parent2 = self._selection_roulette()
+
+            # Cruzar padres para crear hijos
+            children = self._crossover_one_point(parent1, parent2)
+            
+            # Mutar hijos
+            for child in children:
+                if random.random() < self.mutation_rate:
+                    child.mutate_gene()
+                if len(new_population) < self.k:
+                    new_population.append(child)
+
+        # 2. K > N
+        if self.k > self.pop_size:
+            self.population = random.sample(new_population, self.pop_size)
+        #3. K <= N
+        else:
+            old_population = random.sample(self.population, self.pop_size - self.k)
+            self.population = new_population + old_population
+        return
+
 
     def get_best_individual(self) -> Individual:
         """Devuelve el mejor individuo de la población actual."""
