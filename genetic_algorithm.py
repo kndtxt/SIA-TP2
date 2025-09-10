@@ -5,8 +5,17 @@ import os
 from typing import List
 from tqdm import tqdm # Para la barra de progreso
 from individual import Individual
+import logging
+import logging.config
+import json
 from crossover.crossover_class import Crossover
 from concurrent.futures import ThreadPoolExecutor, as_completed
+
+def setup_logging(config_path="config/logger.json"):
+    with open(config_path, "r", encoding="utf-8") as f:
+        config = json.load(f)
+    logging.config.dictConfig(config)
+
 
 class GeneticAlgorithm:
     """
@@ -22,6 +31,8 @@ class GeneticAlgorithm:
         self.mutation_rate = mutation_rate
         self.generation = 0
         self.workers = getattr(self, "workers", os.cpu_count())
+        setup_logging()
+        self.logger = logging.getLogger(__name__)
         
         print("Inicializando población...")
         self.population: List[Individual] = [
@@ -53,6 +64,7 @@ class GeneticAlgorithm:
 
         # Obtener el fitness máximo
         max_fitness = max(ind.fitness for ind in self.population)
+        self.logger.debug(f"Max fitness en la población: {max_fitness}")
 
         # Calcular relative fitness en paralelo
         with ThreadPoolExecutor(max_workers=self.workers) as ex:
@@ -70,6 +82,7 @@ class GeneticAlgorithm:
     def _selection_roulette(self) -> Individual:
         """Selección por Ruleta."""
         total_fitness = sum(ind.fitness for ind in self.population)
+        self.logger.debug(f"Total fitness: {total_fitness}")
         pick = random.uniform(0, total_fitness)
         current = 0
         for ind in self.population:
@@ -109,6 +122,9 @@ class GeneticAlgorithm:
         for i in range(pairs):
             p1 = self._selection_tournament()
             p2 = self._selection_tournament()
+
+            self.logger.debug(f"Selected parents for pair {i}: Fitness {p1.fitness}, {p2.fitness}")
+
             tasks.append((
                 p1, p2,
                 self.width, self.height, self.num_triangles,
