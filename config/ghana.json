@@ -1,0 +1,9 @@
+{
+    "crossover_type": "uniform",
+    "mutation_rate": 0.8,
+    "population_size": 50,
+    "steps": 1000,
+    "triangles": 50,
+    "elitism_count": 5,
+    "image":"ghana.png"
+}
