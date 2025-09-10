@@ -51,15 +51,34 @@ class GeneticAlgorithm:
         """Ordena la población por fitness, de mejor a peor."""
         self.population.sort(key=lambda ind: ind.fitness, reverse=True)
 
-    def _selection_roulette(self) -> Individual:
+    def _selection_roulette(self, quantity) -> list[Individual]:
         """Selección por Ruleta."""
-        pick = random.uniform(0, 1)
+        picks: list[Individual] = []
         current = 0.0
-        for ind in self.population:
-            current += ind.relative_fitness
-            if pick <= current:
-                return ind
-        return self.population[-1]
+        for k in range(quantity):
+            pick = random.uniform(0, 1)
+            for ind in self.population:
+                current += ind.relative_fitness
+                if pick <= current:
+                    picks.append(ind)
+                    break
+        return picks
+    
+    def _selection_universal(self, quantity) -> list[Individual]:
+        """Selección Universal."""
+        if quantity == 0:
+            return None
+        picks: list[Individual] = []
+        pick = random.uniform(0, 1)
+        for k in range(quantity):
+            current_pick = (pick + (k-1))/quantity
+            current = 0.0
+            for ind in self.population:
+                current += ind.relative_fitness
+                if current_pick <= current:
+                    picks.append(ind)
+                    break
+        return picks
 
     def _selection_tournament(self, tournament_size: int = 5) -> Individual:
         """Selección por Torneo."""
@@ -146,11 +165,10 @@ class GeneticAlgorithm:
         #1. Generar K hijos
         while len(new_population) < self.k:
             # Seleccionar padres
-            parent1 = self._selection_roulette()
-            parent2 = self._selection_roulette()
+            parents = self._selection_universal(2)
 
             # Cruzar padres para crear hijos
-            children = crossover_method(self, parent1, parent2)
+            children = crossover_method(self, parents[0], parents[1])
             
             # Mutar hijos
             for child in children:
