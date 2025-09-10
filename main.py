@@ -5,6 +5,8 @@ from PIL import Image
 import json
 import time
 from genetic_algorithm import GeneticAlgorithm
+import logging
+import logging.config
 
 # --- HIPERPARÁMETROS ---
 TARGET_IMAGE_PATH = "images/"  # La imagen que quieres replicar
@@ -19,6 +21,17 @@ RESIZE_FACTOR = 1  # Reducir la imagen para que el proceso sea más rápido (ej.
 # NUM_GENERATIONS = 5000
 # ELITISM_COUNT = 25     # Cuántos de los mejores individuos sobreviven automáticamente
 # MUTATION_RATE = 0.8   # Probabilidad de que un nuevo individuo mute
+
+logger = logging.getLogger(__name__)
+
+def setup_logging(config_path="config/logger.json"):
+    with open(config_path, "r", encoding="utf-8") as f:
+        config = json.load(f)
+    # Eliminar el archivo de log viejo si existe
+    filename = config["handlers"]["file"]["filename"]
+    if os.path.exists(filename):
+        os.remove(filename)
+    logging.config.dictConfig(config)
 
 def read_config(config_path: str):
 
@@ -38,6 +51,10 @@ def read_config(config_path: str):
 def main(args=None):
     print("Iniciando el compresor de imágenes con Algoritmos Genéticos...")
     print(f"Usando {os.cpu_count()} hilos para procesamiento paralelo.\n")
+
+    
+
+    setup_logging()
 
     if args is None:
         print("Usa: python main.py <ruta_al_config.json>")

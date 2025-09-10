@@ -2,3 +2,4 @@
 images/output/*
 images/*.png
 /venv
+/logs

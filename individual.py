@@ -5,6 +5,14 @@ from PIL import Image
 from triangle import Triangle
 from renderer import render
 from fitness import calculate_fitness
+import logging
+import logging.config
+import json
+
+def setup_logging(config_path="config/logger.json"):
+    with open(config_path, "r", encoding="utf-8") as f:
+        config = json.load(f)
+    logging.config.dictConfig(config)
 
 class Individual:
     """
@@ -17,7 +25,12 @@ class Individual:
         self.chromosome: List[Triangle] = [
             Triangle.create_random(img_width, img_height) for _ in range(num_triangles)
         ]
+        setup_logging()
+        self.logger = logging.getLogger(__name__)
         self.fitness = -1.0
+        self.relative_fitness = -1.0
+        self.pseudo_fitness = -1.0
+        self.relative_pseudo_fitness = -1.0 # por ahora no se usa
         self._image: Image.Image = None
 
     @property
@@ -30,6 +43,13 @@ class Individual:
     def calculate_fitness(self, target_image: Image.Image):
         """Calcula y almacena la aptitud del individuo."""
         self.fitness = calculate_fitness(self.image, target_image)
+        self.logger.debug(f"Fitness calculado: {self.fitness}")
+
+
+    def calculate_relative_fitness(self, max_fitness):
+        """Calcula y almacena la aptitud del relativa individuo."""
+        self.relative_fitness = self.fitness/max_fitness
+        self.logger.debug(f"Relative Fitness calculado: {self.relative_fitness}")
     
     def mutate_gene(self):
         """

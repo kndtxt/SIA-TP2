@@ -29,19 +29,40 @@ class GeneticAlgorithm:
             for _ in tqdm(range(pop_size))
         ]
 
-    def _calculate_population_fitness(self):
-        """Calcula el fitness para cada individuo en la población."""
-        # with ThreadPoolExecutor(max_workers=self.workers) as ex:
-        #     futures = [
-        #         ex.submit(individual.calculate_fitness, self.target_image)
-        #         for individual in self.population
-        #     ]
-        #     # tqdm sobre as_completed para mantener la barra de progreso
-        #     for _ in tqdm(as_completed(futures), total=len(futures), desc="Calculando Fitness (threads)"):
-        #         pass
-        for individual in tqdm(self.population, desc="Calculando Fitness"):
-            individual.calculate_fitness(self.target_image)
+    # def _calculate_population_fitness(self):
+    #     """Calcula el fitness para cada individuo en la población."""
+    #     with ThreadPoolExecutor(max_workers=self.workers) as ex:
+    #         futures = [
+    #             ex.submit(individual.calculate_fitness, self.target_image)
+    #             for individual in self.population
+    #         ]
+    #         # tqdm sobre as_completed para mantener la barra de progreso
+    #         for _ in tqdm(as_completed(futures), total=len(futures), desc="Calculando Fitness (threads)"):
+    #             pass
     
+    def _calculate_population_fitness(self):
+        """Calcula el fitness y relative fitness para cada individuo en la población usando threads."""
+        # Calcular fitness en paralelo
+        with ThreadPoolExecutor(max_workers=self.workers) as ex:
+            futures = [
+                ex.submit(individual.calculate_fitness, self.target_image)
+                for individual in self.population
+            ]
+            for _ in tqdm(as_completed(futures), total=len(futures), desc="Calculando Fitness (threads)"):
+                pass
+
+        # Obtener el fitness máximo
+        max_fitness = max(ind.fitness for ind in self.population)
+
+        # Calcular relative fitness en paralelo
+        with ThreadPoolExecutor(max_workers=self.workers) as ex:
+            futures = [
+                ex.submit(individual.calculate_relative_fitness, max_fitness)
+                for individual in self.population
+            ]
+            for _ in tqdm(as_completed(futures), total=len(futures), desc="Calculando Relative-Fitness (threads)"):
+                pass
+
     def _sort_population(self):
         """Ordena la población por fitness, de mejor a peor."""
         self.population.sort(key=lambda ind: ind.fitness, reverse=True)
