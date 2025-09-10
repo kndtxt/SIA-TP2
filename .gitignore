@@ -1,2 +1,4 @@
-.png
+
+images/output/*
+images/*.png
 /venv
