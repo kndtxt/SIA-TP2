@@ -51,7 +51,7 @@ class GeneticAlgorithm:
         """Ordena la población por fitness, de mejor a peor."""
         self.population.sort(key=lambda ind: ind.fitness, reverse=True)
 
-    def _selection_roulette(self, quantity) -> list[Individual]:
+    def _selection_roulette(self, quantity: int) -> list[Individual]:
         """Selección por Ruleta."""
         picks: list[Individual] = []
         current = 0.0
@@ -64,7 +64,7 @@ class GeneticAlgorithm:
                     break
         return picks
     
-    def _selection_universal(self, quantity) -> list[Individual]:
+    def _selection_universal(self, quantity: int) -> list[Individual]:
         """Selección Universal."""
         if quantity == 0:
             return None
@@ -79,11 +79,6 @@ class GeneticAlgorithm:
                     picks.append(ind)
                     break
         return picks
-
-    def _selection_tournament(self, tournament_size: int = 5) -> Individual:
-        """Selección por Torneo."""
-        tournament = random.sample(self.population, tournament_size)
-        return max(tournament, key=lambda ind: ind.fitness)
     
     def _selection_ranking(self) -> Individual:
         """Selección por Ranking."""
@@ -94,6 +89,27 @@ class GeneticAlgorithm:
             if pick <= current:
                 return ind
         return self.population[-1]
+
+    def _selection_tournament_deterministic(self, tournament_size: int, quantity: int) -> list[Individual]:
+        """Selección por Torneo Deterministico."""
+        picks: list[Individual] = []
+        for _ in range(quantity):
+            tournament = random.sample(self.population, tournament_size)
+            picks.append(max(tournament, key=lambda ind: ind.fitness))
+        return picks
+    
+    def _selection_tournament_probabilistic(self, quantity: int) -> list[Individual]:
+        """Selección por Torneo Probabilistico."""
+        picks: list[Individual] = []
+        threshold = 0.9
+        for _ in range(quantity):
+            r = random.uniform(0, 1)
+            tournament = random.sample(self.population, 2)
+            if r < threshold:
+                picks.append(max(tournament, key=lambda ind: ind.fitness))
+            else:
+                picks.append(min(tournament, key=lambda ind: ind.fitness))
+        return picks
     
     # def _crossover_one_point(self, parent1: Individual, parent2: Individual) -> List[Individual]:
     #     """Cruce de un solo punto."""
@@ -165,7 +181,7 @@ class GeneticAlgorithm:
         #1. Generar K hijos
         while len(new_population) < self.k:
             # Seleccionar padres
-            parents = self._selection_universal(2)
+            parents = self._selection_tournament_probabilistic(2)
 
             # Cruzar padres para crear hijos
             children = crossover_method(self, parents[0], parents[1])
