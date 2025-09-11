@@ -10,11 +10,25 @@ import logging.config
 import json
 from crossover.crossover_class import Crossover
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from multiprocessing import Pool, cpu_count
 
 def setup_logging(config_path="config/logger.json"):
     with open(config_path, "r", encoding="utf-8") as f:
         config = json.load(f)
     logging.config.dictConfig(config)
+
+# worker para multiprocessing
+from individual import Individual
+
+def _eval_individual(idx, chromosome, width, height, num_triangles, target_image):
+    """
+    Reconstruye un Individual en el worker, calcula fitness y lo devuelve.
+    """
+    ind = Individual(num_triangles, width, height)
+    ind.chromosome = chromosome  # reusamos los triángulos ya generados
+    ind._image = None            # limpiar caché de imagen
+    ind.calculate_fitness(target_image)
+    return idx, ind.fitness
 
 
 class GeneticAlgorithm:
@@ -40,41 +54,32 @@ class GeneticAlgorithm:
             for _ in tqdm(range(pop_size))
         ]
 
-    # def _calculate_population_fitness(self):
-    #     """Calcula el fitness para cada individuo en la población."""
-    #     with ThreadPoolExecutor(max_workers=self.workers) as ex:
-    #         futures = [
-    #             ex.submit(individual.calculate_fitness, self.target_image)
-    #             for individual in self.population
-    #         ]
-    #         # tqdm sobre as_completed para mantener la barra de progreso
-    #         for _ in tqdm(as_completed(futures), total=len(futures), desc="Calculando Fitness (threads)"):
-    #             pass
-    
     def _calculate_population_fitness(self):
-        """Calcula el fitness y relative fitness para cada individuo en la población usando threads."""
-        # Calcular fitness en paralelo
-        with ThreadPoolExecutor(max_workers=self.workers) as ex:
-            futures = [
-                ex.submit(individual.calculate_fitness, self.target_image)
-                for individual in self.population
-            ]
-            for _ in tqdm(as_completed(futures), total=len(futures), desc="Calculando Fitness (threads)"):
-                pass
+        """Calcula fitness y relative fitness de la población usando multiprocessing.Pool."""
+        tasks = [
+            (i, ind.chromosome, self.width, self.height, self.num_triangles, self.target_image)
+            for i, ind in enumerate(self.population)
+        ]
 
-        # Obtener el fitness máximo
+        with Pool(processes=self.workers or cpu_count()) as pool:
+            results = pool.starmap(_eval_individual, tasks)
+
+        # Escribir resultados en los individuos originales
+        for idx, fit in results:
+            self.population[idx].fitness = fit
+
+        # Relative fitness en el padre
         max_fitness = max(ind.fitness for ind in self.population)
-        self.logger.debug(f"Max fitness en la población: {max_fitness}")
+        self.logger.debug(f"Max fitness en la población: {max_fitness:.6f}")
 
-        # Calcular relative fitness en paralelo
-        with ThreadPoolExecutor(max_workers=self.workers) as ex:
-            futures = [
-                ex.submit(individual.calculate_relative_fitness, max_fitness)
-                for individual in self.population
-            ]
-            for _ in tqdm(as_completed(futures), total=len(futures), desc="Calculando Relative-Fitness (threads)"):
-                pass
+        if max_fitness > 0:
+            for ind in self.population:
+                ind.relative_fitness = ind.fitness / max_fitness
+        else:
+            for ind in self.population:
+                ind.relative_fitness = 0.0
 
+    
     def _sort_population(self):
         """Ordena la población por fitness, de mejor a peor."""
         self.population.sort(key=lambda ind: ind.fitness, reverse=True)
@@ -95,10 +100,54 @@ class GeneticAlgorithm:
         """Selección por Torneo."""
         tournament = random.sample(self.population, tournament_size)
         return max(tournament, key=lambda ind: ind.fitness)
+
+    def run_generation(self):
+        """Ejecuta un ciclo completo de una generación."""
+        self._calculate_population_fitness()
+        self._sort_population()
+        
+        new_population = []
+
+        # 1. Elitismo: Los mejores individuos pasan directamente
+        for i in range(self.elitism_count):
+            new_population.append(self.population[i]) # ver de poner clones
+
+        # 2. Creación de nueva descendencia
+        # Creacion de descendencia en paralelo
+        # need = self.pop_size - len(new_population)
+        # if need > 0:
+        #     children = self._offspring_parallel(need)
+        #     new_population.extend(children)
+
+        while len(new_population) < self.pop_size:
+            # Seleccionar padres
+            parent1 = self._selection_tournament()
+            parent2 = self._selection_tournament()
+            
+            # Cruzar padres para crear hijos
+            # Puedes cambiar a _crossover_uniform aquí para probar
+            children = Crossover()._crossover_one_point(parent1, parent2, self.width, self.height, self.num_triangles)
+
+            # Mutar hijos
+            for child in children:
+                if random.random() < self.mutation_rate:
+                    child.mutate_gene()
+                if len(new_population) < self.pop_size:
+                    new_population.append(child)
+        
+        self.population = new_population
+        self.generation += 1
+
+    def get_best_individual(self) -> Individual:
+        """Devuelve el mejor individuo de la población actual."""
+        return max(self.population, key=lambda ind: ind.fitness)
     
+
+    ## Paralelización de la creación de descendencia
+
     def _make_children_task(self, args):
         (p1, p2,  width, height, ntri, crossover_type, mutation_rate, seed) = args
-        rng = random.Random(seed)  # RNG local por tarea (reproducible)
+        rng = random.Random(seed)
 
         cross = Crossover()
         if crossover_type == "uniform":
@@ -109,7 +158,7 @@ class GeneticAlgorithm:
         out = []
         for c in kids:
             if rng.random() < mutation_rate:
-                c.mutate_gene()        # mutación dentro de la tarea (sin compartir estado externo)
+                c.mutate_gene()        
             out.append(c)
         return out  # [child1, child2]
 
@@ -140,44 +189,3 @@ class GeneticAlgorithm:
                 children.extend(fut.result())
 
         return children[:needed]
-
-
-    def run_generation(self):
-        """Ejecuta un ciclo completo de una generación."""
-        self._calculate_population_fitness()
-        self._sort_population()
-        
-        new_population = []
-
-        # 1. Elitismo: Los mejores individuos pasan directamente
-        for i in range(self.elitism_count):
-            new_population.append(self.population[i]) # ver de poner clones
-
-        # 2. Creación de nueva descendencia
-        need = self.pop_size - len(new_population)
-        if need > 0:
-            children = self._offspring_parallel(need)
-            new_population.extend(children)
-
-        # while len(new_population) < self.pop_size:
-        #     # Seleccionar padres
-        #     parent1 = self._selection_tournament()
-        #     parent2 = self._selection_tournament()
-            
-        #     # Cruzar padres para crear hijos
-        #     # Puedes cambiar a _crossover_uniform aquí para probar
-        #     children = Crossover()._crossover_one_point(parent1, parent2, self.width, self.height, self.num_triangles)
-
-        #     # Mutar hijos
-        #     for child in children:
-        #         if random.random() < self.mutation_rate:
-        #             child.mutate_gene()
-        #         if len(new_population) < self.pop_size:
-        #             new_population.append(child)
-        
-        self.population = new_population
-        self.generation += 1
-
-    def get_best_individual(self) -> Individual:
-        """Devuelve el mejor individuo de la población actual."""
-        return max(self.population, key=lambda ind: ind.fitness)
