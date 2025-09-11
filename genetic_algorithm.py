@@ -24,7 +24,7 @@ class GeneticAlgorithm:
             for _ in tqdm(range(pop_size))
         ]
 
-    def _calculate_population_fitness(self):
+    def calculate_population_fitness(self):
         """Calcula el fitness para cada individuo en la población."""
         for individual in tqdm(self.population, desc="Calculando Fitness"):
             individual.calculate_fitness(self.target_image)
@@ -78,7 +78,7 @@ class GeneticAlgorithm:
 
     def run_generation(self, selection_method, crossover_method):
         """Ejecuta un ciclo completo de una generación."""
-        self._calculate_population_fitness() #No se cambia el fitness en esta implementacion
+        self.calculate_population_fitness() #No se cambia el fitness en esta implementacion
         self._sort_population()
         
         new_population = []

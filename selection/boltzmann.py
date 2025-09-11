@@ -13,8 +13,10 @@ with open('run_config.json', 'r') as f:
     TEMPERATURE = config.get("boltzmann", {}).get("temperature", TEMPERATURE)
 
 def selection_boltzmann(self) -> Individual:
-    """Selección por Boltzmann."""
-    self._calculate_population_fitness()
+    """Selección por Boltzmann.
+        Calcula una pseudo aptitud y luego selecciona usando ruleta.
+    """
+    self.calculate_population_fitness()
     exp_fitness = [math.exp(ind.fitness / TEMPERATURE) for ind in self.population]
     total = sum(exp_fitness)
     probabilities = [f / total for f in exp_fitness]
