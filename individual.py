@@ -18,6 +18,9 @@ class Individual:
             Triangle.create_random(img_width, img_height) for _ in range(num_triangles)
         ]
         self.fitness = -1.0
+        self.relative_fitness = -1.0
+        self.pseudo_fitness = -1.0
+        self.relative_pseudo_fitness = -1.0
         self._image: Image.Image = None
 
     @property

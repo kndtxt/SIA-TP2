@@ -6,12 +6,19 @@ import json
 from selection.boltzmann import selection_boltzmann
 from crossover.one_point import crossover_one_point
 from crossover.uniform import crossover_uniform
+import sys
 
+
+if(len(sys.argv) != 2):
+    print("Uso: python3 main.py <directorio_salida>")
+    sys.exit(1)
+dir_path = sys.argv[1]
+# img_path = sys.argv[2]
 
 
 # --- HIPERPARÁMETROS ---
 TARGET_IMAGE_PATH = "images/input.png"  # La imagen que quieres replicar
-OUTPUT_DIR = "images/output"            # Carpeta para guardar resultados
+OUTPUT_DIR = "images/output/" + dir_path  # Carpeta para guardar resultados
 
 # Parámetros de la imagen
 RESIZE_FACTOR = 1  # Reducir la imagen para que el proceso sea más rápido (ej. 0.25 = 1/4 del tamaño)
@@ -20,7 +27,6 @@ RESIZE_FACTOR = 1  # Reducir la imagen para que el proceso sea más rápido (ej.
 POPULATION_SIZE = 250
 NUM_TRIANGLES = 50
 NUM_GENERATIONS = 5000
-ELITISM_COUNT = 25     # Cuántos de los mejores individuos sobreviven automáticamente
 MUTATION_RATE = 0.8   # Probabilidad de que un nuevo individuo mute
 
 #variaciones del algoritmo
@@ -30,13 +36,10 @@ CROSSOVER_METHOD = any
 
 with open('run_config.json', 'r') as f:
     config = json.load(f)
-    TARGET_IMAGE_PATH = config.get("TARGET_IMAGE_PATH", TARGET_IMAGE_PATH)
-    OUTPUT_DIR = config.get("OUTPUT_DIR", OUTPUT_DIR)
     RESIZE_FACTOR = config.get("RESIZE_FACTOR", RESIZE_FACTOR)
     POPULATION_SIZE = config.get("POPULATION_SIZE", POPULATION_SIZE)
     NUM_TRIANGLES = config.get("NUM_TRIANGLES", NUM_TRIANGLES)
     NUM_GENERATIONS = config.get("NUM_GENERATIONS", NUM_GENERATIONS)
-    ELITISM_COUNT = config.get("ELITISM_COUNT", ELITISM_COUNT)
     MUTATION_RATE = config.get("MUTATION_RATE", MUTATION_RATE)
     SELECTION_METHOD = config.get("SELECTION_CONFIG", SELECTION_METHOD)
     if SELECTION_METHOD == "boltzmann":
@@ -74,7 +77,6 @@ def main():
         target_image=target_image,
         pop_size=POPULATION_SIZE,
         num_triangles=NUM_TRIANGLES,
-        elitism_count=ELITISM_COUNT,
         mutation_rate=MUTATION_RATE
     )
 

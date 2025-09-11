@@ -1,2 +1,17 @@
 .png
 /venv
+.mp4
+.png
+.DS_Store
+.idea
+/__pycache__
+/__pycache__/*
+__pycache__/*
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+*.sqlite3
+*.db
+images/
+images/*

@@ -9,13 +9,11 @@ class GeneticAlgorithm:
     """
     Motor del algoritmo genético para evolucionar imágenes.
     """
-    def __init__(self, target_image, pop_size: int, num_triangles: int, 
-                 elitism_count: int, mutation_rate: float):
+    def __init__(self, target_image, pop_size: int, num_triangles: int, mutation_rate: float):
         self.target_image = target_image
         self.width, self.height = target_image.size
         self.pop_size = pop_size
         self.num_triangles = num_triangles
-        self.elitism_count = elitism_count
         self.mutation_rate = mutation_rate
         
         print("Inicializando población...")
@@ -82,10 +80,6 @@ class GeneticAlgorithm:
         self._sort_population()
         
         new_population = []
-
-        # 1. Elitismo: Los mejores individuos pasan directamente
-        for i in range(self.elitism_count):
-            new_population.append(self.population[i])
 
         # 2. Creación de nueva descendencia
         while len(new_population) < self.pop_size:
