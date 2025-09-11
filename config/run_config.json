@@ -1,0 +1,15 @@
+{
+    "TARGET_IMAGE_PATH": "images/input.png",
+    "OUTPUT_DIR": "images/output",
+    "RESIZE_FACTOR": 1,
+    "POPULATION_SIZE": 50,
+    "NUM_TRIANGLES": 50,
+    "NUM_GENERATIONS": 1000,
+    "MUTATION_RATE": 0.8,
+    "SELECTION_CONFIG": "boltzmann",
+    "CROSSOVER_CONFIG": "one_point",
+
+    "boltzmann": {
+        "temperature": 1.0
+    }
+}

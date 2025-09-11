@@ -9,8 +9,8 @@ import logging
 import logging.config
 import json
 from selection.boltzmann import selection_boltzmann
-from crossover.one_point import crossover_one_point
-from crossover.uniform import crossover_uniform
+from crossover.crossover_class import Crossover
+
 
 
 
@@ -50,9 +50,9 @@ with open('./configs/run_config.json', 'r') as f:
 
     CROSSOVER_METHOD = config.get("CROSSOVER_CONFIG", CROSSOVER_METHOD)
     if CROSSOVER_METHOD == "one_point":
-        CROSSOVER_METHOD = crossover_one_point
+        CROSSOVER_METHOD = Crossover()._crossover_one_point
     elif CROSSOVER_METHOD == "uniform":
-        CROSSOVER_METHOD = crossover_uniform
+        CROSSOVER_METHOD = Crossover()._crossover_uniform
     else:
         raise ValueError(f"Método de cruce desconocido: {CROSSOVER_METHOD}")
 
@@ -60,25 +60,13 @@ def main():
     print("Iniciando el compresor de imágenes con Algoritmos Genéticos...")
     print(f"Usando {os.cpu_count()} hilos para procesamiento paralelo.\n")
 
-    
-
-    setup_logging()
-
-    if args is None:
-        print("Usa: python main.py <ruta_al_config.json>")
-        return
-
-    population_size, num_triangles, num_generations, mutation_rate, image, crossover_type, elitism_count = read_config(args[1])
-
-    print(f"Parámetros:\n- Tamaño Población: {population_size}\n- Triángulos por Individuo: {num_triangles}\n- Generaciones: {num_generations}\n- Mutación: {mutation_rate*100}%\n- Elitismo: {elitism_count} individuos\n")
-
     # Crear directorio de salida si no existe
     if not os.path.exists(OUTPUT_DIR):
         os.makedirs(OUTPUT_DIR)
 
     # 1. ============ Cargar y preparar la imagen objetivo ============
     print(f"Cargando imagen objetivo desde: {TARGET_IMAGE_PATH}")
-    target_image = Image.open(TARGET_IMAGE_PATH + image).convert("RGB")
+    target_image = Image.open(TARGET_IMAGE_PATH).convert("RGB")
 
     original_size = target_image.size
     new_size = (int(original_size[0] * RESIZE_FACTOR), int(original_size[1] * RESIZE_FACTOR))
@@ -131,4 +119,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main(args=sys.argv)
+    main()

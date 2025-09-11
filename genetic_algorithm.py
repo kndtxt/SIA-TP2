@@ -9,7 +9,6 @@ import logging
 import logging.config
 import json
 from crossover.crossover_class import Crossover
-from concurrent.futures import ThreadPoolExecutor, as_completed
 from multiprocessing import Pool, cpu_count
 
 def setup_logging(config_path="config/logger.json"):
@@ -21,12 +20,9 @@ def setup_logging(config_path="config/logger.json"):
 from individual import Individual
 
 def _eval_individual(idx, chromosome, width, height, num_triangles, target_image):
-    """
-    Reconstruye un Individual en el worker, calcula fitness y lo devuelve.
-    """
     ind = Individual(num_triangles, width, height)
-    ind.chromosome = chromosome  # reusamos los triángulos ya generados
-    ind._image = None            # limpiar caché de imagen
+    ind.chromosome = chromosome      # usamos los genes ya generados
+    ind._image = None                # limpiar caché de imagen
     ind.calculate_fitness(target_image)
     return idx, ind.fitness
 
@@ -54,14 +50,30 @@ class GeneticAlgorithm:
         ]
 
     def _calculate_population_fitness(self):
-        """Calcula el fitness para cada individuo en la población."""
+        """Calcula fitness y relative fitness de la población usando multiprocessing."""
+        tasks = [
+            (i, ind.chromosome, self.width, self.height, self.num_triangles, self.target_image)
+            for i, ind in enumerate(self.population)
+        ]
+
+        # Ejecutar en paralelo
+        with Pool(processes=self.workers or cpu_count()) as pool:
+            results = list(
+                tqdm(pool.starmap(_eval_individual, tasks),
+                     total=len(tasks),
+                     desc="Calculando Fitness (multiprocessing)")
+            )
+
+        # Escribir resultados en los individuos reales
         max_fitness = 0.0
-        for individual in tqdm(self.population, desc="Calculando Fitness"):
-            individual.calculate_fitness(self.target_image)
-            if individual.fitness > max_fitness:
-                max_fitness = individual.fitness
-        for individual in tqdm(self.population, desc="Calculando Relative-Fitness"):
-            individual.calculate_relative_fitness(max_fitness)
+        for idx, fit in results:
+            self.population[idx].fitness = fit
+            if fit > max_fitness:
+                max_fitness = fit
+
+        # Calcular relative fitness en el padre (es barato)
+        for ind in tqdm(self.population, desc="Calculando Relative-Fitness"):
+            ind.calculate_relative_fitness(max_fitness)
 
     def _calculate_population_ranking_pseudo_fitness(self):
         """Calcula el pseudo-fitness de ranking para cada individuo en la población."""
@@ -140,33 +152,6 @@ class GeneticAlgorithm:
             else:
                 picks.append(min(tournament, key=lambda ind: ind.fitness))
         return picks
-    
-    # def _crossover_one_point(self, parent1: Individual, parent2: Individual) -> List[Individual]:
-    #     """Cruce de un solo punto."""
-    #     child1 = Individual(self.num_triangles, self.width, self.height)
-    #     child2 = Individual(self.num_triangles, self.width, self.height)
-        
-    #     crossover_point = random.randint(1, self.num_triangles - 1)
-        
-    #     child1.chromosome = copy.deepcopy(parent1.chromosome[:crossover_point] + parent2.chromosome[crossover_point:])
-    #     child2.chromosome = copy.deepcopy(parent2.chromosome[:crossover_point] + parent1.chromosome[crossover_point:])
-        
-    #     return [child1, child2]
-
-    # def _crossover_uniform(self, parent1: Individual, parent2: Individual) -> List[Individual]:
-    #     """Cruce uniforme."""
-    #     child1 = Individual(self.num_triangles, self.width, self.height)
-    #     child2 = Individual(self.num_triangles, self.width, self.height)
-
-    #     for i in range(self.num_triangles):
-    #         if random.random() < 0.5:
-    #             child1.chromosome[i] = copy.deepcopy(parent1.chromosome[i])
-    #             child2.chromosome[i] = copy.deepcopy(parent2.chromosome[i])
-    #         else:
-    #             child1.chromosome[i] = copy.deepcopy(parent2.chromosome[i])
-    #             child2.chromosome[i] = copy.deepcopy(parent1.chromosome[i])
-        
-    #     return [child1, child2]
 
     def run_generation_traditional(self):
         """Ejecuta un ciclo completo de una generación."""
@@ -215,8 +200,9 @@ class GeneticAlgorithm:
             parents = self._selection_tournament_probabilistic(2)
 
             # Cruzar padres para crear hijos
-            children = crossover_method(self, parents[0], parents[1])
-            
+
+            children = crossover_method(parents[0], parents[1], self.width, self.height, self.num_triangles)
+
             # Mutar hijos
             for child in children:
                 if random.random() < self.mutation_rate:
@@ -234,54 +220,8 @@ class GeneticAlgorithm:
         return
 
 
+
     def get_best_individual(self) -> Individual:
         """Devuelve el mejor individuo de la población actual."""
         return max(self.population, key=lambda ind: ind.fitness)
     
-
-    ## Paralelización de la creación de descendencia
-
-    def _make_children_task(self, args):
-        (p1, p2,  width, height, ntri, crossover_type, mutation_rate, seed) = args
-        rng = random.Random(seed)
-
-        cross = Crossover()
-        if crossover_type == "uniform":
-            kids = cross._crossover_uniform(p1, p2, width, height, ntri)
-        else:
-            kids = cross._crossover_one_point(p1, p2, width, height, ntri)
-
-        out = []
-        for c in kids:
-            if rng.random() < mutation_rate:
-                c.mutate_gene()        
-            out.append(c)
-        return out  # [child1, child2]
-
-    def _offspring_parallel(self, needed: int) -> List[Individual]:
-        # Pre-armo las tareas con selección en el hilo principal
-        tasks = []
-        pairs = (needed + 1) // 2
-        base_seed = (getattr(self, "seed", 12345) ^ (self.generation << 16))
-
-        for i in range(pairs):
-            p1 = self._selection_tournament()
-            p2 = self._selection_tournament()
-
-            self.logger.debug(f"Selected parents for pair {i}: Fitness {p1.fitness}, {p2.fitness}")
-
-            tasks.append((
-                p1, p2,
-                self.width, self.height, self.num_triangles,
-                getattr(self, "crossover_type", "one_point"),
-                self.mutation_rate,
-                base_seed + i
-            ))
-
-        children = []
-        with ThreadPoolExecutor(max_workers=self.workers) as ex:
-            futures = [ex.submit(self._make_children_task, t) for t in tasks]
-            for fut in as_completed(futures):
-                children.extend(fut.result())
-
-        return children[:needed]
