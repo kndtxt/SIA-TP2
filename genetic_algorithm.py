@@ -39,7 +39,6 @@ class GeneticAlgorithm:
         """Devuelve el mejor individuo de la población actual."""
         return max(self.population, key=lambda ind: ind.fitness)
 
-    """
     def run_generation_traditional(self):
         #Ejecuta un ciclo completo de una generación.
         new_population = []
@@ -57,7 +56,7 @@ class GeneticAlgorithm:
             # Mutar hijos
             for child in children:
                 if random.random() < self.mutation_rate:
-                    child.mutate_gene()
+                    child.mutate_gene(self.mutation_rate)
                 if len(new_population) < self.k:
                     new_population.append(child)
 
@@ -66,7 +65,6 @@ class GeneticAlgorithm:
 
         # 3. Ordenar por fitness y seleccionar N al azar
         self.population = random.sample(combined_population, self.pop_size)
-    """
 
     def run_generation(self, selection_method, crossover_method):
         """Ejecuta un ciclo completo de una generación."""
@@ -84,7 +82,7 @@ class GeneticAlgorithm:
             # Mutar hijos
             for child in children:
                 if random.random() < self.mutation_rate:
-                    child.mutate_gene()
+                    child.mutate_gene(self.mutation_rate)
                 if len(new_population) < self.k:
                     new_population.append(child)
 

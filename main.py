@@ -1,131 +1,60 @@
 # main.py
-import os
+import json
 from PIL import Image
 from genetic_algorithm import GeneticAlgorithm
-import json
-from crossover.one_point import crossover_one_point
-from crossover.uniform import crossover_uniform
-from selection import boltzmann, elitist, ranking, roulette, tournament_deterministic, tournament_probabilistic, universal
+from selection import boltzmann, elitist, ranking, roulette, tournament_deterministic, tournament_probabilistic
+from crossover import anular, one_point, two_point, uniform
 
-# --- HIPERPARÁMETROS ---
-TARGET_IMAGE_PATH = "images/input.png"  # La imagen que quieres replicar
-OUTPUT_DIR = "images/output"            # Carpeta para guardar resultados
+# Cargar configuración desde JSON
+def load_config(path="./configs/config.json"):
+    with open(path, "r") as file:
+        return json.load(file)
 
-# Parámetros de la imagen
-RESIZE_FACTOR = 1  # Reducir la imagen para que el proceso sea más rápido (ej. 0.25 = 1/4 del tamaño)
-
-# Parámetros del Algoritmo Genético
-POPULATION_SIZE = 50
-K_SIZE = 25
-NUM_TRIANGLES = 50
-NUM_GENERATIONS = 1000
-MUTATION_RATE = 0.8   # Probabilidad de que un nuevo individuo mute
-
-#variaciones del algoritmo
-SELECTION_METHOD = roulette.selection_roulette
-CROSSOVER_METHOD = any
-
-best_fitness_threshold = {
-    "threshold": 0.95,
-    "tally": 0
+SELECTION_METHODS = {
+    "boltzmann": boltzmann.selection_boltzmann,
+    "elitist": elitist.selection_elitist,
+    "ranking": ranking.selection_ranking,
+    "roulette": roulette.selection_roulette,
+    "tournament_deterministic": tournament_deterministic.selection_tournament_deterministic,
+    "tournament_probabilistic": tournament_probabilistic.selection_tournament_probabilistic,
 }
-prev_best_fitness = -1.0
-with open('./configs/run_config.json', 'r') as f:
-    config = json.load(f)
-    TARGET_IMAGE_PATH = config.get("TARGET_IMAGE_PATH", TARGET_IMAGE_PATH)
-    OUTPUT_DIR = config.get("OUTPUT_DIR", OUTPUT_DIR)
-    RESIZE_FACTOR = config.get("RESIZE_FACTOR", RESIZE_FACTOR)
-    POPULATION_SIZE = config.get("POPULATION_SIZE", POPULATION_SIZE)
-    NUM_TRIANGLES = config.get("NUM_TRIANGLES", NUM_TRIANGLES)
-    NUM_GENERATIONS = config.get("NUM_GENERATIONS", NUM_GENERATIONS)
-    MUTATION_RATE = config.get("MUTATION_RATE", MUTATION_RATE)
-    SELECTION_METHOD = config.get("SELECTION_CONFIG", SELECTION_METHOD)
-    best_fitness_threshold["threshold"] = config.get("FITNESS_THRESHOLD", best_fitness_threshold["threshold"])
-    if SELECTION_METHOD == "roulette":
-        SELECTION_METHOD = roulette.selection_roulette
-    else:
-        raise ValueError(f"Método de selección desconocido: {SELECTION_METHOD}")
 
-    CROSSOVER_METHOD = config.get("CROSSOVER_CONFIG", CROSSOVER_METHOD)
-    if CROSSOVER_METHOD == "one_point":
-        CROSSOVER_METHOD = crossover_one_point
-    elif CROSSOVER_METHOD == "uniform":
-        CROSSOVER_METHOD = crossover_uniform
-    else:
-        raise ValueError(f"Método de cruce desconocido: {CROSSOVER_METHOD}")
-    
-
+CROSSOVER_METHODS = {
+    "anular": anular.crossover_anular,
+    "one_point": one_point.crossover_one_point,
+    "two_point": two_point.crossover_two_point,
+    "uniform": uniform.crossover_uniform,
+}
 
 def main():
-    print("Iniciando el compresor de imágenes con Algoritmos Genéticos...")
+    config = load_config()
 
-    prev_best_fitness = -1.0
+    # Cargar imagen objetivo
+    target_image = Image.open(config["target_image_path"]).convert("RGB")
 
-    # Crear directorio de salida si no existe
-    if not os.path.exists(OUTPUT_DIR):
-        os.makedirs(OUTPUT_DIR)
-
-    # 1. ============ Cargar y preparar la imagen objetivo ============
-    print(f"Cargando imagen objetivo desde: {TARGET_IMAGE_PATH}")
-    target_image = Image.open(TARGET_IMAGE_PATH).convert("RGB")
-    
-    original_size = target_image.size
-    new_size = (int(original_size[0] * RESIZE_FACTOR), int(original_size[1] * RESIZE_FACTOR))
-    
-    print(f"Redimensionando imagen a {new_size} para un procesamiento más rápido.")
-    target_image = target_image.resize(new_size)
-
-    # 2. ============ Inicializar el Algoritmo Genético ============
+    # Crear el algoritmo genético
     ga = GeneticAlgorithm(
         target_image=target_image,
-        pop_size=POPULATION_SIZE,
-        k=K_SIZE,
-        num_triangles=NUM_TRIANGLES,
-        mutation_rate=MUTATION_RATE
+        pop_size=config["pop_size"],
+        k=config["k"],
+        num_triangles=config["num_triangles"],
+        mutation_rate=config["mutation_rate"]
     )
 
-    # 3. ============ Ciclo evolutivo ============
-    print("\n--- Iniciando evolución ---")
-    for i in range(NUM_GENERATIONS):
-        print(f"\n--- Generación {i + 1}/{NUM_GENERATIONS} ---")
-        ga.run_generation(selection_method=SELECTION_METHOD, crossover_method=CROSSOVER_METHOD)
-        
-        best_ind = ga.get_best_individual()
-        
-        # Imprimir métricas
-        print(f"Mejor Fitness: {best_ind.fitness:.4f}")
-        
-        # Guardar imagen de progreso periódicamente
-        if (i + 1) % 25 == 0:
-            output_path = os.path.join(OUTPUT_DIR, f"generation_{i+1}.png")
-            print(f"Guardando progreso en: {output_path}")
-            best_ind.image.save(output_path)
-        # Condición de parada temprana (opcional)
-        if best_fitness_threshold["threshold"] <= best_ind.fitness:
-            print(f"Condición de parada alcanzada: Fitness >= {best_fitness_threshold['threshold']}.")
-            break
-        else:
-            if prev_best_fitness == best_ind.fitness:
-                best_fitness_threshold["tally"] += 1
-            else:
-                best_fitness_threshold["tally"] = 0
-            prev_best_fitness = best_ind.fitness
-            if best_fitness_threshold["tally"] >= 500:
-                print(f"Condición de parada alcanzada: El mejor fitness no ha mejorado en 500 generaciones.")
-                break
-            
+    # Obtener funciones de selección y crossover
+    selection_fn = SELECTION_METHODS.get(config["selection_method"])
+    crossover_fn = CROSSOVER_METHODS.get(config["crossover_method"])
 
-    # 4. ============ Guardar el resultado final ============
-    print("\n--- Evolución finalizada ---")
-    final_best = ga.get_best_individual()
-    final_output_path = os.path.join(OUTPUT_DIR, "final_result.png")
-    
-    print(f"Guardando la mejor imagen en: {final_output_path}")
-    # Redimensionamos al tamaño original para una mejor visualización
-    final_best.image.resize(original_size, Image.Resampling.LANCZOS).save(final_output_path)
+    if not selection_fn or not crossover_fn:
+        raise ValueError("Método de selección o crossover inválido en config.json")
 
-    print("\n¡Proceso completado!")
-
+    # Ejecutar generaciones
+    for gen in range(config["num_generations"]):
+        print(f"\nGeneración {gen + 1}/{config['num_generations']}")
+        ga.calculate_population_fitness(ga.population)
+        ga.run_generation(selection_fn, crossover_fn)
+        best = ga.get_best_individual()
+        print(f"Fitness del mejor individuo: {best.fitness}")
 
 if __name__ == "__main__":
     main()

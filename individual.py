@@ -5,7 +5,6 @@ from PIL import Image
 from triangle import Triangle
 from renderer import render
 from fitness import calculate_fitness
-from main import MUTATION_RATE
 
 class Individual:
     """
@@ -44,11 +43,11 @@ class Individual:
     # ༼ つ ◕_◕ ༽つ
 
 
-    def mutate_gene(self):
+    def mutate_gene(self, mutation_rate):
         """
         Se altera un solo gen (triángulo) aleatorio.
         """
-        if random.random() < MUTATION_RATE:
+        if random.random() < mutation_rate:
             self._mutate_one_gene()
             self._image = None
 
@@ -64,7 +63,7 @@ class Individual:
         self._image = None
     """
 
-    def mutate_multigen_uniform(self):
+    def mutate_multigen_uniform(self, mutation_rate):
         """
         Recorro todos los genes, SI SON 4 GENES, NO SON 10 CARACTERISTICAS
         (coordenadas y color de cada triángulo).
@@ -72,25 +71,25 @@ class Individual:
         """
         for tri in self.chromosome:
 
-            if random.random() < MUTATION_RATE:
+            if random.random() < mutation_rate:
                 tri.points[0] = (
                     random.randint(0, self.img_width),
                     random.randint(0, self.img_height)
                 )
 
-            if random.random() < MUTATION_RATE:
+            if random.random() < mutation_rate:
                 tri.points[1] = (
                     random.randint(0, self.img_width),
                     random.randint(0, self.img_height)
                 )
 
-            if random.random() < MUTATION_RATE:
+            if random.random() < mutation_rate:
                 tri.points[2] = (
                     random.randint(0, self.img_width),
                     random.randint(0, self.img_height)
                 )
 
-            if random.random() < MUTATION_RATE:
+            if random.random() < mutation_rate:
                 tri.color = (
                     random.randint(0, 255),  # R
                     random.randint(0, 255),  # G
@@ -102,11 +101,11 @@ class Individual:
         self._image = None
 
 
-    def mutate_complete(self):
+    def mutate_complete(self, mutation_rate):
         
         """Mutación Completa: Todos los genes se mutan."""
         for tri in self.chromosome:
-            if random.random() < MUTATION_RATE:
+            if random.random() < mutation_rate:
                 tri.points[0] = (
                     random.randint(0, self.img_width),
                     random.randint(0, self.img_height)
