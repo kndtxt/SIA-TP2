@@ -51,17 +51,36 @@ class Individual:
             self._mutate_one_gene()
             self._image = None
 
-    """  def mutate_multigen_limited(self, m: int):
-        
-        Se selecciona un número aleatorio de genes en [1, M] y se mutan.
-        
-        num_to_mutate = random.randint(1, m)
-        for _ in range(num_to_mutate):
-            if random.random() < MUTATION_RATE:
-                self._mutate_one_gene()
+    def mutate_multigen_limited(self, mutation_rate, m: int = 4):
+        """
+        Con probabilidad pm, se elige un número aleatorio n en [1, M].
+        Luego, en cada triángulo del cromosoma se mutan n genes distintos
+        (entre {punto 0, punto 1, punto 2, color}).
+        """
+        if random.random() < mutation_rate:
+            n = random.randint(1, m)
 
-        self._image = None
-    """
+            for tri in self.chromosome:
+
+                gene_types = ["p0", "p1", "p2", "color"]
+                to_mutate = random.sample(gene_types, n)
+
+                for gtype in to_mutate:
+                    if gtype.startswith("p"):
+                        idx = int(gtype[1])
+                        tri.points[idx] = (
+                            random.randint(0, self.img_width),
+                            random.randint(0, self.img_height)
+                        )
+                    elif gtype == "color":
+                        tri.color = (
+                            random.randint(0, 255),
+                            random.randint(0, 255),
+                            random.randint(0, 255),
+                            random.randint(30, 100)
+                        )
+
+            self._image = None
 
     def mutate_multigen_uniform(self, mutation_rate):
         """
@@ -97,7 +116,6 @@ class Individual:
                     random.randint(30, 100)   # A
                 )
 
-        # Invalido la caché de la imagen
         self._image = None
 
 
