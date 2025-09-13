@@ -3,11 +3,9 @@ import os
 from PIL import Image
 from genetic_algorithm import GeneticAlgorithm
 import json
-from selection.boltzmann import selection_boltzmann
 from crossover.one_point import crossover_one_point
 from crossover.uniform import crossover_uniform
-
-
+from selection import boltzmann, elitist, ranking, roulette, tournament_deterministic, tournament_probabilistic, universal
 
 # --- HIPERPARÁMETROS ---
 TARGET_IMAGE_PATH = "images/input.png"  # La imagen que quieres replicar
@@ -24,7 +22,7 @@ NUM_GENERATIONS = 1000
 MUTATION_RATE = 0.8   # Probabilidad de que un nuevo individuo mute
 
 #variaciones del algoritmo
-SELECTION_METHOD = any
+SELECTION_METHOD = roulette.selection_roulette
 CROSSOVER_METHOD = any
 
 
@@ -38,8 +36,8 @@ with open('./configs/run_config.json', 'r') as f:
     NUM_GENERATIONS = config.get("NUM_GENERATIONS", NUM_GENERATIONS)
     MUTATION_RATE = config.get("MUTATION_RATE", MUTATION_RATE)
     SELECTION_METHOD = config.get("SELECTION_CONFIG", SELECTION_METHOD)
-    if SELECTION_METHOD == "boltzmann":
-        SELECTION_METHOD = selection_boltzmann
+    if SELECTION_METHOD == "roulette":
+        SELECTION_METHOD = roulette.selection_roulette
     else:
         raise ValueError(f"Método de selección desconocido: {SELECTION_METHOD}")
 

@@ -6,7 +6,7 @@
     "NUM_TRIANGLES": 50,
     "NUM_GENERATIONS": 1000,
     "MUTATION_RATE": 0.8,
-    "SELECTION_CONFIG": "boltzmann",
+    "SELECTION_CONFIG": "roulette",
     "CROSSOVER_CONFIG": "one_point",
 
     "boltzmann": {

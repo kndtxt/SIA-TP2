@@ -34,9 +34,9 @@ class Individual:
         """Calcula y almacena la aptitud del individuo."""
         self.fitness = calculate_fitness(self.image, target_image)
 
-    def calculate_relative_fitness(self, max_fitness):
+    def calculate_relative_fitness(self, total_fitness):
         """Calcula y almacena la aptitud del relativa individuo."""
-        self.relative_fitness = self.fitness/max_fitness
+        self.relative_fitness = self.fitness/total_fitness
     
     def mutate_gene(self):
         """
