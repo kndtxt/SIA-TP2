@@ -8,7 +8,7 @@
     "MUTATION_RATE": 0.8,
     "SELECTION_CONFIG": "boltzmann",
     "CROSSOVER_CONFIG": "one_point",
-
+    "FITNESS_THRESHOLD": 0.95,
     "boltzmann": {
         "temperature": 1.0
     }

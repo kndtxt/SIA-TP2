@@ -27,7 +27,11 @@ MUTATION_RATE = 0.8   # Probabilidad de que un nuevo individuo mute
 SELECTION_METHOD = any
 CROSSOVER_METHOD = any
 
-
+best_fitness_threshold = {
+    "threshold": 0.95,
+    "tally": 0
+}
+prev_best_fitness = -1.0
 with open('./configs/run_config.json', 'r') as f:
     config = json.load(f)
     TARGET_IMAGE_PATH = config.get("TARGET_IMAGE_PATH", TARGET_IMAGE_PATH)
@@ -38,6 +42,7 @@ with open('./configs/run_config.json', 'r') as f:
     NUM_GENERATIONS = config.get("NUM_GENERATIONS", NUM_GENERATIONS)
     MUTATION_RATE = config.get("MUTATION_RATE", MUTATION_RATE)
     SELECTION_METHOD = config.get("SELECTION_CONFIG", SELECTION_METHOD)
+    best_fitness_threshold["threshold"] = config.get("FITNESS_THRESHOLD", best_fitness_threshold["threshold"])
     if SELECTION_METHOD == "boltzmann":
         SELECTION_METHOD = selection_boltzmann
     else:
@@ -50,9 +55,13 @@ with open('./configs/run_config.json', 'r') as f:
         CROSSOVER_METHOD = crossover_uniform
     else:
         raise ValueError(f"Método de cruce desconocido: {CROSSOVER_METHOD}")
+    
+
 
 def main():
     print("Iniciando el compresor de imágenes con Algoritmos Genéticos...")
+
+    prev_best_fitness = -1.0
 
     # Crear directorio de salida si no existe
     if not os.path.exists(OUTPUT_DIR):
@@ -93,6 +102,20 @@ def main():
             output_path = os.path.join(OUTPUT_DIR, f"generation_{i+1}.png")
             print(f"Guardando progreso en: {output_path}")
             best_ind.image.save(output_path)
+        # Condición de parada temprana (opcional)
+        if best_fitness_threshold["threshold"] <= best_ind.fitness:
+            print(f"Condición de parada alcanzada: Fitness >= {best_fitness_threshold['threshold']}.")
+            break
+        else:
+            if prev_best_fitness == best_ind.fitness:
+                best_fitness_threshold["tally"] += 1
+            else:
+                best_fitness_threshold["tally"] = 0
+            prev_best_fitness = best_ind.fitness
+            if best_fitness_threshold["tally"] >= 500:
+                print(f"Condición de parada alcanzada: El mejor fitness no ha mejorado en 500 generaciones.")
+                break
+            
 
     # 4. ============ Guardar el resultado final ============
     print("\n--- Evolución finalizada ---")
