@@ -28,6 +28,6 @@ class Triangle:
             random.randint(0, 255),
             random.randint(0, 255),
             random.randint(0, 255),
-            100#random.randint(30, 255) # Se prefiere una transparencia media-baja
+            random.randint(30, 255) # Se prefiere una transparencia media-baja
         )
         return Triangle(points, color)

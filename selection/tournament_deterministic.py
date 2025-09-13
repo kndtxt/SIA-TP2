@@ -5,8 +5,9 @@ from typing import List
 from genetic_algorithm import GeneticAlgorithm
 import random
 
-def selection_tournament_deterministic(geneticAlgorithm: GeneticAlgorithm, population: List[Individual], quantity: int, tournament_size: int) -> List[Individual]:
+def selection_tournament_deterministic(geneticAlgorithm: GeneticAlgorithm, population: List[Individual], quantity: int) -> List[Individual]:
         """Selección por Torneo Deterministico."""
+        tournament_size = 10
         geneticAlgorithm.calculate_population_fitness(population)
         picks: List[Individual] = []
         for _ in range(quantity):

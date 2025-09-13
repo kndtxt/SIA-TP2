@@ -81,7 +81,7 @@ def main():
         ga.run_generation(selection_fn, crossover_fn, mutation_fn, replacement_strategy)
         best = ga.get_best_individual()
         print(f"Fitness del mejor individuo: {best.fitness}")
-        if (gen + 1) % 10 == 0:
+        if (gen + 1) % 25 == 0:
             output_path = os.path.join(output_dir, f"generation_{gen+1}.png")
             print(f"Guardando progreso en: {output_path}")
             best.image.save(f"{output_path}")

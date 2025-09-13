@@ -33,7 +33,7 @@ class Individual:
 
     def calculate_fitness(self, target_image: Image.Image):
         """Calcula y almacena la aptitud del individuo."""
-        self.fitness = calculate_simple_fitness(self.image, target_image)
+        self.fitness = calculate_combined_fitness(self.image, target_image)
 
     def calculate_relative_fitness(self, total_fitness):
         """Calcula y almacena la aptitud del relativa individuo."""
