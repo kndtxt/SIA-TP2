@@ -1,3 +1,4 @@
+# boltzmann.py
 import math
 from individual import Individual
 from typing import List

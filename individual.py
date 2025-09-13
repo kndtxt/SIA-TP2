@@ -4,7 +4,7 @@ from typing import List
 from PIL import Image
 from triangle import Triangle
 from renderer import render
-from fitness import calculate_combined_fitness, calculate_ssim_fitness, calculate_mse_fitness
+from fitness import calculate_combined_fitness, calculate_ssim_fitness, calculate_mse_fitness, calculate_simple_fitness
 
 class Individual:
     """
@@ -33,7 +33,7 @@ class Individual:
 
     def calculate_fitness(self, target_image: Image.Image):
         """Calcula y almacena la aptitud del individuo."""
-        self.fitness = calculate_ssim_fitness(self.image, target_image)
+        self.fitness = calculate_simple_fitness(self.image, target_image)
 
     def calculate_relative_fitness(self, total_fitness):
         """Calcula y almacena la aptitud del relativa individuo."""

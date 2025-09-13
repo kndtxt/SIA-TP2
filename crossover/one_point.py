@@ -1,3 +1,5 @@
+# one_point.py
+
 from individual import Individual
 from triangle import Triangle
 import random

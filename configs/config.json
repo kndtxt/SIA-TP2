@@ -4,9 +4,10 @@
   "num_triangles": 50,
   "mutation_rate": 0.05,
   "num_generations": 1000,
-  "selection_method": "roulette",
+  "selection_method": "ranking",
   "crossover_method": "one_point",
   "mutation_method": "basic",
-  "replacement_strategy": "young_bias",
-  "target_image_path": "images/input.png"
+  "replacement_strategy": "traditional",
+  "target_image_path": "images/input.png",
+  "output_dir": "images/out"
 }

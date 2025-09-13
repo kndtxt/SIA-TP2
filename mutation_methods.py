@@ -1,4 +1,5 @@
 # mutation_methods.py
+
 from individual import Individual
 
 def basic_mutation(individual: Individual, mutation_rate):

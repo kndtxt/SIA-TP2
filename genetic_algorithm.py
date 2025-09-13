@@ -3,7 +3,7 @@ import random
 from typing import List, Callable
 from tqdm import tqdm # Para la barra de progreso
 from individual import Individual
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
 
 def mutate_child(child, mutation_rate, mutation_fn):
         if random.random() < mutation_rate:
@@ -29,14 +29,6 @@ class GeneticAlgorithm:
         ]
 
     def calculate_population_fitness(self, population: List[Individual]):
-        """
-        total_fitness = 0.0
-        for individual in tqdm(population, desc="Calculando Fitness"):
-            individual.calculate_fitness(self.target_image)
-            total_fitness += individual.fitness
-        for individual in population:
-            individual.calculate_relative_fitness(total_fitness)
-        """
         total_fitness = 0.0
 
         with ThreadPoolExecutor() as executor:
@@ -79,6 +71,8 @@ class GeneticAlgorithm:
         # Mutar hijos
         with ThreadPoolExecutor() as executor:
             children = list(executor.map(lambda child: mutate_child(child, self.mutation_rate, mutation_method),children))
+
+        new_population = children
 
         if(replacement_strategy == "traditional"):
             # 2. Combinar padres + hijos

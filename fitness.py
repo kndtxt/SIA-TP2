@@ -3,6 +3,16 @@ import numpy as np
 from PIL import Image
 from skimage.metrics import structural_similarity as ssim
 
+def calculate_simple_fitness(generated_image: Image.Image, target_image: Image.Image) -> float:
+    """
+    Fitness basado en el error cuadrático medio (MSE).
+    """
+    target_arr = np.array(target_image, dtype=np.float32)
+    generated_arr = np.array(generated_image, dtype=np.float32)
+
+    error = np.mean(np.square(target_arr - generated_arr))
+    return 1.0 / (1.0 + error)
+
 def calculate_mse_fitness(generated_image: Image.Image, target_image: Image.Image) -> float:
     """
     Fitness basado en el error cuadrático medio (MSE).
