@@ -16,7 +16,7 @@ def crossover_one_point(self, parent1: Individual, parent2: Individual) -> List[
     crossover_point = random.randint(1, num_genes - 1)
 
     if crossover_point % genes_per_triangle == 0:
-        a = crossover_point / genes_per_triangle
+        a = crossover_point // genes_per_triangle
         ## copia por cromosomas
         child1.chromosome = copy.deepcopy(parent1.chromosome[:a] + parent2.chromosome[a:])
         child2.chromosome = copy.deepcopy(parent2.chromosome[:a] + parent1.chromosome[a:])
