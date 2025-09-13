@@ -1,9 +1,11 @@
 # main.py
 import json
 from PIL import Image
+from tqdm import tqdm # Para la barra de progreso
 from genetic_algorithm import GeneticAlgorithm
 from selection import boltzmann, elitist, ranking, roulette, tournament_deterministic, tournament_probabilistic
 from crossover import anular, one_point, two_point, uniform
+from mutation_methods import basic_mutation, multigen_uniform_mutation, complete_mutation
 
 # Cargar configuración desde JSON
 def load_config(path="./configs/config.json"):
@@ -26,6 +28,12 @@ CROSSOVER_METHODS = {
     "uniform": uniform.crossover_uniform,
 }
 
+MUTATION_METHODS = {
+    "basic": basic_mutation,
+    "uniform": multigen_uniform_mutation,
+    "complete": complete_mutation
+}
+
 def main():
     config = load_config()
 
@@ -44,15 +52,16 @@ def main():
     # Obtener funciones de selección y crossover
     selection_fn = SELECTION_METHODS.get(config["selection_method"])
     crossover_fn = CROSSOVER_METHODS.get(config["crossover_method"])
+    mutation_fn = MUTATION_METHODS.get(config["mutation_method"])
+    replacement_strategy = (config["replacement_strategy"])
 
     if not selection_fn or not crossover_fn:
         raise ValueError("Método de selección o crossover inválido en config.json")
 
     # Ejecutar generaciones
-    for gen in range(config["num_generations"]):
+    for gen in tqdm(range(config["num_generations"]), desc="Calculando Fitness"):
         print(f"\nGeneración {gen + 1}/{config['num_generations']}")
-        ga.calculate_population_fitness(ga.population)
-        ga.run_generation(selection_fn, crossover_fn)
+        ga.run_generation(selection_fn, crossover_fn, mutation_fn, replacement_strategy)
         best = ga.get_best_individual()
         print(f"Fitness del mejor individuo: {best.fitness}")
 

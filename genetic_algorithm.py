@@ -1,8 +1,14 @@
 # genetic_algorithm.py
 import random
-from typing import List
+from typing import List, Callable
 from tqdm import tqdm # Para la barra de progreso
 from individual import Individual
+from concurrent.futures import ThreadPoolExecutor
+
+def mutate_child(child, mutation_rate, mutation_fn):
+        if random.random() < mutation_rate:
+            mutation_fn(child, mutation_rate)
+        return child
 
 class GeneticAlgorithm:
     """
@@ -23,11 +29,22 @@ class GeneticAlgorithm:
         ]
 
     def calculate_population_fitness(self, population: List[Individual]):
-        """Calcula el fitness para cada individuo en la población."""
+        """
         total_fitness = 0.0
         for individual in tqdm(population, desc="Calculando Fitness"):
             individual.calculate_fitness(self.target_image)
             total_fitness += individual.fitness
+        for individual in population:
+            individual.calculate_relative_fitness(total_fitness)
+        """
+        total_fitness = 0.0
+
+        with ThreadPoolExecutor() as executor:
+            list(tqdm(executor.map(lambda ind: ind.calculate_fitness(self.target_image), population),
+                    total=len(population), desc="Calculando Fitness"))
+        
+        total_fitness = sum(ind.fitness for ind in population)
+
         for individual in population:
             individual.calculate_relative_fitness(total_fitness)
  
@@ -39,58 +56,45 @@ class GeneticAlgorithm:
         """Devuelve el mejor individuo de la población actual."""
         return max(self.population, key=lambda ind: ind.fitness)
 
-    def run_generation_traditional(self):
-        #Ejecuta un ciclo completo de una generación.
-        new_population = []
-
-        #Ejecuta una generación usando reemplazo tradicional: N padres + K hijos → seleccionar N.
-        #1. Generar K hijos
-        while len(new_population) < self.k:
-            # Seleccionar padres
-            parent1 = self._selection_roulette()
-            parent2 = self._selection_roulette()
-
-            # Cruzar padres para crear hijos
-            children = self._crossover_one_point(parent1, parent2)
-            
-            # Mutar hijos
-            for child in children:
-                if random.random() < self.mutation_rate:
-                    child.mutate_gene(self.mutation_rate)
-                if len(new_population) < self.k:
-                    new_population.append(child)
-
-        # 2. Combinar padres + hijos
-        combined_population = self.population + new_population
-
-        # 3. Ordenar por fitness y seleccionar N al azar
-        self.population = random.sample(combined_population, self.pop_size)
-
-    def run_generation(self, selection_method, crossover_method):
+    def run_generation(self, selection_method: Callable, crossover_method: Callable, mutation_method, replacement_strategy: str):
         """Ejecuta un ciclo completo de una generación."""
         new_population = []
 
         """Ejecuta una generación usando reemplazo de sesgo joven: N padres + K hijos → seleccionar N mejores."""
         #1. Generar K hijos
-        while len(new_population) < self.k:
-            # Seleccionar padres
-            parents = selection_method(self, self.population, 2)
+        # Seleccionar padres
+        num_pairs = (self.k + 1) // 2  # ceil(k/2)
+        parent_pairs = [
+            selection_method(self, self.population, 2)
+            for _ in range(num_pairs)
+        ]
 
-            # Cruzar padres para crear hijos
-            children = crossover_method(self, parents[0], parents[1])
+        # Cruzar padres para crear hijos
+        children = []
+        for p1, p2 in parent_pairs:
+            children.extend(crossover_method(self, p1, p2))
+        
+        children = children[:self.k]
             
-            # Mutar hijos
-            for child in children:
-                if random.random() < self.mutation_rate:
-                    child.mutate_gene(self.mutation_rate)
-                if len(new_population) < self.k:
-                    new_population.append(child)
+        # Mutar hijos
+        with ThreadPoolExecutor() as executor:
+            children = list(executor.map(lambda child: mutate_child(child, self.mutation_rate, mutation_method),children))
 
-        # 2. K > N
-        if self.k > self.pop_size:
-            self.population = random.sample(new_population, self.pop_size)
-        #3. K <= N
+        if(replacement_strategy == "traditional"):
+            # 2. Combinar padres + hijos
+            combined_population = self.population + new_population
+
+            # 3. Ordenar por fitness y seleccionar N al azar
+            self.population = random.sample(combined_population, self.pop_size)
+
         else:
-            old_population = random.sample(self.population, self.pop_size - self.k)
-            self.population = new_population + old_population
-        return
+            if(replacement_strategy == "young_bias"):
+                # 2. K > N
+                if self.k > self.pop_size:
+                    self.population = random.sample(new_population, self.pop_size)
+                #3. K <= N
+                else:
+                    old_population = random.sample(self.population, self.pop_size - self.k)
+                    self.population = new_population + old_population
+            else:
+                raise ValueError(f"Estrategia de reemplazo inválida: {replacement_strategy}")
