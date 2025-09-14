@@ -7,6 +7,7 @@ from genetic_algorithm import GeneticAlgorithm
 from selection import boltzmann, elitist, ranking, roulette, tournament_deterministic, tournament_probabilistic, universal
 from crossovers import anular, one_point, two_point, uniform, one_point_fake
 from mutations import mutation_methods
+from write_to_file import delete_existing_file, write_to_file
 
 epsilon = 1e-6
 
@@ -87,6 +88,8 @@ def main():
         mutation_rate=MUTATION_RATE
     )
 
+    delete_existing_file("fitness_log.txt")
+    write_to_file("fitness_log.txt", "Generación;Mejor Fitness\n")
     # Ciclo evolutivo
     print("\n--- Iniciando evolución ---")
     for i in tqdm(range(NUM_GENERATIONS), desc="Evolucionando"):
@@ -104,6 +107,9 @@ def main():
             os.makedirs(os.path.dirname(output_path), exist_ok=True)
             print(f"Guardando progreso en: {output_path}")
             best_ind.image.save(output_path)
+
+        # Impresion a archivo
+        write_to_file("fitness_log.txt", f"{i + 1};{best_ind.fitness:.10f}\n")
 
         if best_fitness_threshold["threshold"] <= best_ind.fitness:
             print(f"Condición de parada alcanzada: Fitness >= {best_fitness_threshold['threshold']}.")
