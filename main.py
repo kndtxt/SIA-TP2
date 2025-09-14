@@ -4,7 +4,7 @@ import json
 from tqdm import tqdm
 from PIL import Image
 from genetic_algorithm import GeneticAlgorithm
-from selection import roulette, tournament_deterministic
+from selection import boltzmann, elitist, ranking, roulette, tournament_deterministic, tournament_probabilistic, universal, tournament
 from crossovers import one_point
 
 # Cargar configuración desde JSON
@@ -13,8 +13,14 @@ def load_config(path="./configs/config.json"):
         return json.load(file)
     
 SELECTION_METHODS = {
+    "boltzmann": boltzmann.selection_boltzmann,
+    "elitist": elitist.selection_elitist,
+    "ranking": ranking.selection_ranking,
     "roulette": roulette.selection_roulette,
-    "tournament_deterministic": tournament_deterministic.selection_tournament,
+    "tournament_deterministic": tournament_deterministic.selection_tournament_deterministic,
+    "tournament_probabilistic": tournament_probabilistic.selection_tournament_probabilistic,
+    "universal": universal.selection_universal,
+    "tournament": tournament.selection_tournament,
 }
 
 CROSSOVER_METHODS = {
@@ -56,6 +62,7 @@ def main():
     ga = GeneticAlgorithm(
         target_image=target_image,
         pop_size=POPULATION_SIZE,
+        k=K_SIZE,
         num_triangles=NUM_TRIANGLES,
         mutation_rate=MUTATION_RATE
     )
@@ -74,6 +81,7 @@ def main():
         # Guardar imagen de progreso periódicamente
         if (i + 1) % 25 == 0:
             output_path = os.path.join(OUTPUT_DIR, f"generation_{i+1}.png")
+            os.makedirs(os.path.dirname(output_path), exist_ok=True)
             print(f"Guardando progreso en: {output_path}")
             best_ind.image.save(output_path)
 
@@ -81,7 +89,7 @@ def main():
     print("\n--- Evolución finalizada ---")
     final_best = ga.get_best_individual()
     final_output_path = os.path.join(OUTPUT_DIR, "final_result.png")
-    
+    os.makedirs(os.path.dirname(final_output_path), exist_ok=True)
     print(f"Guardando la mejor imagen en: {final_output_path}")
     final_best.image.save(final_output_path)
 

@@ -1,9 +1,16 @@
-#tournament_deterministic.py
-import random
-from individual import Individual
-from genetic_algorithm import GeneticAlgorithm
+# tournament_deterministic.py
 
-def selection_tournament(geneticAlgorithm: GeneticAlgorithm, tournament_size: int = 5) -> Individual:
-        """Selección por Torneo."""
-        tournament = random.sample(geneticAlgorithm.population, tournament_size)
-        return max(tournament, key=lambda ind: ind.fitness)
+from individual import Individual
+from typing import List
+from genetic_algorithm import GeneticAlgorithm
+import random
+
+def selection_tournament_deterministic(geneticAlgorithm: GeneticAlgorithm, quantity: int) -> List[Individual]:
+        """Selección por Torneo Deterministico."""
+        tournament_size = 10
+        #geneticAlgorithm.calculate_population_fitness(geneticAlgorithm.population)
+        picks: List[Individual] = []
+        for _ in range(quantity):
+            tournament = random.sample(geneticAlgorithm.population, tournament_size)
+            picks.append(max(tournament, key=lambda ind: ind.fitness))
+        return picks

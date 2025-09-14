@@ -1,14 +1,20 @@
-#roulette.py
-import random
-from individual import Individual
+# roulette.py
 
-def selection_roulette(population) -> Individual:
-        """Selección por Ruleta."""
-        total_fitness = sum(ind.fitness for ind in population)
-        pick = random.uniform(0, total_fitness)
-        current = 0
-        for ind in population:
-            current += ind.fitness
-            if current > pick:
-                return ind
-        return population[-1]
+from individual import Individual
+from typing import List
+from genetic_algorithm import GeneticAlgorithm
+import random
+
+def selection_roulette(geneticAlgorithm: GeneticAlgorithm, quantity: int) -> List[Individual]:
+    """Selección por Ruleta."""
+    #geneticAlgorithm.calculate_population_fitness(population)
+    picks: List[Individual] = []
+    current = 0.0
+    for _ in range(quantity):
+        pick = random.uniform(0, 1)
+        for ind in geneticAlgorithm.population:
+            current += ind.relative_fitness
+            if pick <= current:
+                picks.append(ind)
+                break
+    return picks

@@ -23,6 +23,6 @@ def calculate_fitness(generated_image: Image.Image, target_image: Image.Image) -
     error = np.sum((target_arr - generated_arr) ** 2)
 
     # La aptitud es 1.0 para un error de 0 y tiende a 0 para errores grandes.
-    fitness = 1.0 / (1.0 + error)
+    fitness = 1.0 / (1.0 + np.log1p(error))
     
     return fitness
