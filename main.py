@@ -61,6 +61,7 @@ def main():
     K_SIZE = (config["k"])
 
     selection_fn = SELECTION_METHODS.get(config["selection_method"])
+    generation_selection_fn = SELECTION_METHODS.get(config["generation_selection_method"])
     crossover_fn = CROSSOVER_METHODS.get(config["crossover_method"])
     mutation_fn = MUTATION_METHODS.get(config["mutation_method"])
     replacement_strategy = (config["replacement_strategy"])
@@ -90,7 +91,7 @@ def main():
     print("\n--- Iniciando evolución ---")
     for i in tqdm(range(NUM_GENERATIONS), desc="Evolucionando"):
         print(f"\n--- Generación {i + 1}/{NUM_GENERATIONS} ---")
-        ga.run_generation(selection_fn, crossover_fn, mutation_fn, replacement_strategy)
+        ga.run_generation(selection_fn, crossover_fn, mutation_fn, replacement_strategy, generation_selection_fn)
         
         best_ind = ga.get_best_individual()
         

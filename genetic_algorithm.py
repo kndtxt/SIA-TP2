@@ -35,7 +35,7 @@ class GeneticAlgorithm:
         """Ordena la población por fitness, de mejor a peor."""
         self.population.sort(key=lambda ind: ind.fitness, reverse=True)
 
-    def run_generation(self, selection, crossover, mutation, replacement_strategy):
+    def run_generation(self, selection, crossover, mutation, replacement_strategy, generation_selection):
         """Ejecuta un ciclo completo de una generación."""
         
         new_population = []
@@ -61,18 +61,18 @@ class GeneticAlgorithm:
             combined_population = self.population + new_population
 
             # 3. Ordenar por fitness y seleccionar N al azar
-            self.population = selection(self, combined_population, self.pop_size)
+            self.population = generation_selection(self, combined_population, self.pop_size)
             self.calculate_population_fitness(self.population)
 
         else:
             if(replacement_strategy == "young_bias"):
                 # 2. K > N
                 if self.k > self.pop_size:
-                    self.population = selection(self, new_population, self.pop_size)
+                    self.population = generation_selection(self, new_population, self.pop_size)
                     self.calculate_population_fitness()
                 #3. K <= N
                 else:
-                    old_population = selection(self, self.population, self.pop_size - self.k)
+                    old_population = generation_selection(self, self.population, self.pop_size - self.k)
                     self.population = new_population + old_population
                     self.calculate_population_fitness()
             else:
