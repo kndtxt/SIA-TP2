@@ -7,17 +7,17 @@ from genetic_algorithm import GeneticAlgorithm
 
 TEMPERATURE = 0
   
-def selection_boltzmann(geneticAlgorithm: GeneticAlgorithm, quantity: int) -> Individual:
+def selection_boltzmann(geneticAlgorithm: GeneticAlgorithm, population: List[Individual], quantity: int) -> Individual:
     """Selección por Boltzmann.
         Calcula una pseudo aptitud y luego selecciona usando ruleta.
     """
-    #geneticAlgorithm.calculate_population_fitness(population)
-    calculate_population_boltzmann_pseudo_fitness(geneticAlgorithm.population)
+    geneticAlgorithm.calculate_population_fitness(population)
+    calculate_population_boltzmann_pseudo_fitness(population)
     picks: List[Individual] = []
     for _ in range(quantity):
         pick = random.uniform(0, 1)
         current = 0.0
-        for ind in geneticAlgorithm.population:
+        for ind in population:
             current += ind.relative_pseudo_fitness
             if pick <= current:
                 picks.append(ind)

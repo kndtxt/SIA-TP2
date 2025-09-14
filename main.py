@@ -4,8 +4,8 @@ import json
 from tqdm import tqdm
 from PIL import Image
 from genetic_algorithm import GeneticAlgorithm
-from selection import boltzmann, elitist, ranking, roulette, tournament_deterministic, tournament_probabilistic, universal, tournament
-from crossovers import one_point
+from selection import boltzmann, elitist, ranking, roulette, tournament_deterministic, tournament_probabilistic, universal
+from crossovers import anular, one_point, two_point, uniform, one_point_fake
 
 # Cargar configuración desde JSON
 def load_config(path="./configs/config.json"):
@@ -19,12 +19,15 @@ SELECTION_METHODS = {
     "roulette": roulette.selection_roulette,
     "tournament_deterministic": tournament_deterministic.selection_tournament_deterministic,
     "tournament_probabilistic": tournament_probabilistic.selection_tournament_probabilistic,
-    "universal": universal.selection_universal,
-    "tournament": tournament.selection_tournament,
+    "universal": universal.selection_universal
 }
 
 CROSSOVER_METHODS = {
+    "anular": anular.crossover_anular,
     "one_point": one_point.crossover_one_point,
+    "two_point": two_point.crossover_two_point,
+    "uniform": uniform.crossover_uniform,
+    "one_point_fake": one_point_fake.crossover_one_point
 }
 
 MUTATION_METHODS = {
@@ -71,7 +74,7 @@ def main():
     print("\n--- Iniciando evolución ---")
     for i in tqdm(range(NUM_GENERATIONS), desc="Evolucionando"):
         print(f"\n--- Generación {i + 1}/{NUM_GENERATIONS} ---")
-        ga.run_generation(selection_fn, crossover_fn)
+        ga.run_generation(selection_fn, crossover_fn, replacement_strategy)
         
         best_ind = ga.get_best_individual()
         

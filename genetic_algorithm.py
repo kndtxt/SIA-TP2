@@ -22,26 +22,26 @@ class GeneticAlgorithm:
             for _ in tqdm(range(pop_size))
         ]
 
-    def _calculate_population_fitness(self):
+    def calculate_population_fitness(self, population: List[Individual]):
         """Calcula el fitness para cada individuo en la población."""
         total_fitness = 0.0
-        for individual in tqdm(self.population, desc="Calculando Fitness"):
+        for individual in tqdm(population, desc="Calculando Fitness"):
             individual.calculate_fitness(self.target_image)
             total_fitness += individual.fitness
-        for individual in self.population:
+        for individual in population:
             individual.relative_fitness = individual.fitness/total_fitness
     
     def _sort_population(self):
         """Ordena la población por fitness, de mejor a peor."""
         self.population.sort(key=lambda ind: ind.fitness, reverse=True)
 
-    def run_generation(self, selection, crossover):
+    def run_generation(self, selection, crossover, replacement_strategy):
         """Ejecuta un ciclo completo de una generación."""
         
         new_population = []
 
         # Creación de nueva descendencia k
-        parents = selection(self, self.k)
+        parents = selection(self, self.population, self.k)
         children = crossover(self, parents)
         children = children[:self.k]
 
@@ -49,12 +49,31 @@ class GeneticAlgorithm:
         for child in children:
                 if random.random() < self.mutation_rate:
                     child.mutate_gene()
-                if len(new_population) < self.pop_size:
-                    new_population.append(child)
 
         # Selección de la siguiente generación
-        self.population = new_population
-        self._calculate_population_fitness()
+        new_population = children
+
+        if(replacement_strategy == "traditional"):
+            # 2. Combinar padres + hijos
+            combined_population = self.population + new_population
+
+            # 3. Ordenar por fitness y seleccionar N al azar
+            self.population = selection(self, combined_population, self.pop_size)
+            self.calculate_population_fitness(self.population)
+
+        else:
+            if(replacement_strategy == "young_bias"):
+                # 2. K > N
+                if self.k > self.pop_size:
+                    self.population = selection(self, new_population, self.pop_size)
+                    self.calculate_population_fitness()
+                #3. K <= N
+                else:
+                    old_population = selection(self, self.population, self.pop_size - self.k)
+                    self.population = new_population + old_population
+                    self.calculate_population_fitness()
+            else:
+                raise ValueError(f"Estrategia de reemplazo inválida: {replacement_strategy}")
         
 
     def get_best_individual(self) -> Individual:
