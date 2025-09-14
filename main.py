@@ -34,6 +34,12 @@ MUTATION_METHODS = {
 
 }
 
+best_fitness_threshold = {
+    "threshold": 0.05,
+    "no_improvement_limit": 500,
+    "tally": 0
+}
+
 def main():
     print("Iniciando el compresor de imágenes con Algoritmos Genéticos...")
 
@@ -52,6 +58,10 @@ def main():
     crossover_fn = CROSSOVER_METHODS.get(config["crossover_method"])
     #mutation_fn = MUTATION_METHODS.get(config["mutation_method"])
     replacement_strategy = (config["replacement_strategy"])
+
+    # Condiciones de corte
+    best_fitness_threshold["threshold"] = config.get("FITNESS_THRESHOLD", best_fitness_threshold["threshold"])
+    prev_best_fitness = -1.0
 
     # Crear directorio de salida si no existe
     if not os.path.exists(OUTPUT_DIR):
@@ -87,6 +97,19 @@ def main():
             os.makedirs(os.path.dirname(output_path), exist_ok=True)
             print(f"Guardando progreso en: {output_path}")
             best_ind.image.save(output_path)
+
+        if best_fitness_threshold["threshold"] <= best_ind.fitness:
+            print(f"Condición de parada alcanzada: Fitness >= {best_fitness_threshold['threshold']}.")
+            break
+        else:
+            if prev_best_fitness == best_ind.fitness:
+                best_fitness_threshold["tally"] += 1
+            else:
+                best_fitness_threshold["tally"] = 0
+            prev_best_fitness = best_ind.fitness
+            if best_fitness_threshold["tally"] >= best_fitness_threshold["no_improvement_limit"]:
+                print(f"Condición de parada alcanzada: El mejor fitness no ha mejorado en {best_fitness_threshold['no_improvement_limit']} generaciones.")
+                break
 
     # Guardar el resultado final
     print("\n--- Evolución finalizada ---")
