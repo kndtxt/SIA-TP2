@@ -3,6 +3,7 @@ import random
 from typing import List
 from tqdm import tqdm # Para la barra de progreso
 from individual import Individual
+import multiprocessing
 
 class GeneticAlgorithm:
     """
@@ -22,14 +23,27 @@ class GeneticAlgorithm:
             for _ in tqdm(range(pop_size))
         ]
 
-    def calculate_population_fitness(self, population: List[Individual]):
-        """Calcula el fitness para cada individuo en la población."""
-        total_fitness = 0.0
-        for individual in tqdm(population, desc="Calculando Fitness"):
-            individual.calculate_fitness(self.target_image)
-            total_fitness += individual.fitness
-        for individual in population:
-            individual.relative_fitness = individual.fitness/total_fitness
+
+
+    # calculo del fitness con multiprocesamiento
+    def _calculate_individual_fitness(self, individual_data):
+        """Función auxiliar para calcular el fitness de un individuo (para multiprocesamiento)."""
+        individual, target_image = individual_data
+        individual.calculate_fitness(target_image)
+        return individual
+
+    def calculate_population_fitness(self, population: List['Individual']):
+        """Calcula el fitness para cada individuo en la población usando multiprocessing."""
+        data = [(individual, self.target_image) for individual in population]
+        num_workers = max(1, multiprocessing.cpu_count() - 2)
+        with multiprocessing.Pool(processes=num_workers) as pool:
+            results = list(tqdm(pool.imap(self._calculate_individual_fitness, data), total=len(population), desc="Calculando Fitness"))
+        total_fitness = sum(ind.fitness for ind in results)
+        for ind in results:
+            ind.relative_fitness = ind.fitness / total_fitness if total_fitness > 0 else 0
+        for i, ind in enumerate(results):
+            population[i].fitness = ind.fitness
+            population[i].relative_fitness = ind.relative_fitness
     
     def _sort_population(self):
         """Ordena la población por fitness, de mejor a peor."""
