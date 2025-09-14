@@ -79,16 +79,16 @@ class GeneticAlgorithm:
             combined_population = self.population + new_population
 
             # 3. Ordenar por fitness y seleccionar N al azar
-            self.population = random.sample(combined_population, self.pop_size)
+            self.population = selection_method(self, combined_population, self.pop_size)
 
         else:
             if(replacement_strategy == "young_bias"):
                 # 2. K > N
                 if self.k > self.pop_size:
-                    self.population = random.sample(new_population, self.pop_size)
+                    self.population = selection_method(self, new_population, self.pop_size)
                 #3. K <= N
                 else:
-                    old_population = random.sample(self.population, self.pop_size - self.k)
+                    old_population = selection_method(self, self.population, self.pop_size - self.k)
                     self.population = new_population + old_population
             else:
                 raise ValueError(f"Estrategia de reemplazo inválida: {replacement_strategy}")
