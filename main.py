@@ -1,6 +1,7 @@
 # main.py
 import os
 import json
+from time import time
 from tqdm import tqdm
 from PIL import Image
 from genetic_algorithm import GeneticAlgorithm
@@ -89,7 +90,10 @@ def main():
     )
 
     delete_existing_file("fitness_log.txt")
+    delete_existing_file("time_log.txt")
     write_to_file("fitness_log.txt", "Generación;Mejor Fitness\n")
+    start_time = time()
+    write_to_file("time_log.txt", f"Tiempo inicial: {start_time}\n")
     # Ciclo evolutivo
     print("\n--- Iniciando evolución ---")
     for i in tqdm(range(NUM_GENERATIONS), desc="Evolucionando"):
@@ -126,6 +130,9 @@ def main():
 
     # Guardar el resultado final
     print("\n--- Evolución finalizada ---")
+    end_time = time()
+    write_to_file("time_log.txt", f"Tiempo final: {end_time}\n")
+    write_to_file("time_log.txt", f"Tiempo total de ejecución (segundos): {end_time - start_time}\n")
     final_best = ga.get_best_individual()
     final_output_path = os.path.join(OUTPUT_DIR, "final_result.png")
     os.makedirs(os.path.dirname(final_output_path), exist_ok=True)
@@ -133,7 +140,7 @@ def main():
     final_best.image.save(final_output_path)
 
     print("\n¡Proceso completado!")
-
+    
 
 if __name__ == "__main__":
     main()
