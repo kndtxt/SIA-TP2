@@ -35,7 +35,7 @@ class GeneticAlgorithm:
         """Ordena la población por fitness, de mejor a peor."""
         self.population.sort(key=lambda ind: ind.fitness, reverse=True)
 
-    def run_generation(self, selection, crossover, replacement_strategy):
+    def run_generation(self, selection, crossover, mutation, replacement_strategy):
         """Ejecuta un ciclo completo de una generación."""
         
         new_population = []
@@ -45,10 +45,13 @@ class GeneticAlgorithm:
         children = crossover(self, parents)
         children = children[:self.k]
 
+        print(f"[DEBUG] Cantidad de padres: {len(parents)}")
+        print(f"[DEBUG] Hijos generados: {len(children)}")
+
         # Mutación de la descendencia
         for child in children:
                 if random.random() < self.mutation_rate:
-                    child.mutate_gene()
+                    mutation(child, self.mutation_rate)
 
         # Selección de la siguiente generación
         new_population = children

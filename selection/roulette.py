@@ -9,9 +9,9 @@ def selection_roulette(geneticAlgorithm: GeneticAlgorithm, population: List[Indi
     """Selección por Ruleta."""
     geneticAlgorithm.calculate_population_fitness(population)
     picks: List[Individual] = []
-    current = 0.0
-    for _ in range(quantity):
+    while len(picks) < quantity:
         pick = random.uniform(0, 1)
+        current = 0.0
         for ind in population:
             current += ind.relative_fitness
             if pick <= current:

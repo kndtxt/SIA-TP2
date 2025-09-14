@@ -6,6 +6,9 @@ from PIL import Image
 from genetic_algorithm import GeneticAlgorithm
 from selection import boltzmann, elitist, ranking, roulette, tournament_deterministic, tournament_probabilistic, universal
 from crossovers import anular, one_point, two_point, uniform, one_point_fake
+from mutations import mutation_methods
+
+epsilon = 1e-6
 
 # Cargar configuración desde JSON
 def load_config(path="./configs/config.json"):
@@ -31,12 +34,15 @@ CROSSOVER_METHODS = {
 }
 
 MUTATION_METHODS = {
-
+    "basic": mutation_methods.basic_mutation,
+    "uniform": mutation_methods.multigen_uniform_mutation,
+    "limited": mutation_methods.multigen_limited_mutation,
+    "complete": mutation_methods.complete_mutation
 }
 
 best_fitness_threshold = {
     "threshold": 0.05,
-    "no_improvement_limit": 500,
+    "no_improvement_limit": 100,
     "tally": 0
 }
 
@@ -56,7 +62,7 @@ def main():
 
     selection_fn = SELECTION_METHODS.get(config["selection_method"])
     crossover_fn = CROSSOVER_METHODS.get(config["crossover_method"])
-    #mutation_fn = MUTATION_METHODS.get(config["mutation_method"])
+    mutation_fn = MUTATION_METHODS.get(config["mutation_method"])
     replacement_strategy = (config["replacement_strategy"])
 
     # Condiciones de corte
@@ -84,7 +90,7 @@ def main():
     print("\n--- Iniciando evolución ---")
     for i in tqdm(range(NUM_GENERATIONS), desc="Evolucionando"):
         print(f"\n--- Generación {i + 1}/{NUM_GENERATIONS} ---")
-        ga.run_generation(selection_fn, crossover_fn, replacement_strategy)
+        ga.run_generation(selection_fn, crossover_fn, mutation_fn, replacement_strategy)
         
         best_ind = ga.get_best_individual()
         
@@ -102,7 +108,7 @@ def main():
             print(f"Condición de parada alcanzada: Fitness >= {best_fitness_threshold['threshold']}.")
             break
         else:
-            if prev_best_fitness == best_ind.fitness:
+            if abs(prev_best_fitness - best_ind.fitness) < epsilon:
                 best_fitness_threshold["tally"] += 1
             else:
                 best_fitness_threshold["tally"] = 0

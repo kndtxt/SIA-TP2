@@ -14,7 +14,7 @@ def selection_boltzmann(geneticAlgorithm: GeneticAlgorithm, population: List[Ind
     geneticAlgorithm.calculate_population_fitness(population)
     calculate_population_boltzmann_pseudo_fitness(population)
     picks: List[Individual] = []
-    for _ in range(quantity):
+    while len(picks) < quantity:
         pick = random.uniform(0, 1)
         current = 0.0
         for ind in population:

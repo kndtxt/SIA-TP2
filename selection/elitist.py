@@ -16,7 +16,7 @@ def selection_elitist(geneticAlgorithm: GeneticAlgorithm, population: List[Indiv
             if idx >= quantity:
                 break
             count = math.ceil(quantity - idx / pop_size) #cuantas veces elegimos a ese individuo
-            for _ in range(count):
+            while len(picks) < count:
                 if idx >= quantity:
                     break
                 picks.append(ind)

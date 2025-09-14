@@ -10,7 +10,7 @@ def selection_tournament_probabilistic(geneticAlgorithm: GeneticAlgorithm, popul
         geneticAlgorithm.calculate_population_fitness(population)
         picks: List[Individual] = []
         threshold = 0.9
-        for _ in range(quantity):
+        while len(picks) < quantity:
             r = random.uniform(0, 1)
             tournament = random.sample(population, 2)
             if r < threshold:

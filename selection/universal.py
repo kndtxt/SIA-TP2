@@ -12,12 +12,14 @@ def selection_universal(geneticAlgorithm: GeneticAlgorithm, population: List[Ind
         geneticAlgorithm.calculate_population_fitness(population)
         picks: List[Individual] = []
         pick = random.uniform(0, 1)
-        for k in range(quantity):
+        k = 0
+        while len(picks) < quantity:
             current_pick = (pick + (k-1))/quantity
             current = 0.0
             for ind in population:
                 current += ind.relative_fitness
                 if current_pick <= current:
                     picks.append(ind)
+                    k+=1
                     break
         return picks

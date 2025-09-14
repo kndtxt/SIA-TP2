@@ -10,7 +10,7 @@ def selection_tournament_deterministic(geneticAlgorithm: GeneticAlgorithm, popul
         tournament_size = 10
         geneticAlgorithm.calculate_population_fitness(population)
         picks: List[Individual] = []
-        for _ in range(quantity):
+        while len(picks) < quantity:
             tournament = random.sample(population, tournament_size)
             picks.append(max(tournament, key=lambda ind: ind.fitness))
         return picks

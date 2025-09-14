@@ -23,9 +23,9 @@ def selection_ranking(geneticAlgorithm: GeneticAlgorithm, population: List[Indiv
     """Selección por Ranking."""
     calculate_population_ranking_pseudo_fitness(geneticAlgorithm, population)
     picks: List[Individual] = []
-    pick = random.uniform(0, 1)
-    current = 0.0
-    for _ in range(quantity):
+    while len(picks) < quantity:
+        pick = random.uniform(0, 1)
+        current = 0.0
         for ind in population:
             current += ind.relative_pseudo_fitness
             if pick <= current:
