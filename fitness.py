@@ -15,20 +15,14 @@ def calculate_fitness(generated_image: Image.Image, target_image: Image.Image) -
         Un valor de punto flotante que representa la aptitud (más alto es mejor).
     """
     # Convierte las imágenes a arrays de NumPy para cálculos rápidos
-    target_arr = np.array(target_image, dtype=np.int64)
-    generated_arr = np.array(generated_image, dtype=np.int64)
+    target_arr = np.array(target_image, dtype=np.float32)
+    generated_arr = np.array(generated_image, dtype=np.float32)
 
     # Calcula la suma de las diferencias al cuadrado
     # Es la base del Error Cuadrático Medio (MSE)
     error = np.sum((target_arr - generated_arr) ** 2)
 
-    # Normaliza el error para que sea más manejable
-    # Se divide por el máximo error posible
-    max_error = target_arr.size * (255 ** 2)
-    normalized_error = error / max_error
-
     # La aptitud es 1.0 para un error de 0 y tiende a 0 para errores grandes.
-    #fitness = 1.0 - normalized_error
     fitness = 1.0 / (1.0 + error)
     
     return fitness

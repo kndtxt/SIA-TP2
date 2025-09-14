@@ -1,58 +1,75 @@
 # main.py
 import os
+import json
+from tqdm import tqdm
 from PIL import Image
 from genetic_algorithm import GeneticAlgorithm
+from selection import roulette, tournament_deterministic
+from crossovers import one_point
 
-# --- HIPERPARÁMETROS ---
-TARGET_IMAGE_PATH = "images/input.png"  # La imagen que quieres replicar
-OUTPUT_DIR = "images/output"            # Carpeta para guardar resultados
+# Cargar configuración desde JSON
+def load_config(path="./configs/config.json"):
+    with open(path, "r") as file:
+        return json.load(file)
+    
+SELECTION_METHODS = {
+    "roulette": roulette.selection_roulette,
+    "tournament_deterministic": tournament_deterministic.selection_tournament,
+}
 
-# Parámetros de la imagen
-RESIZE_FACTOR = 1  # Reducir la imagen para que el proceso sea más rápido (ej. 0.25 = 1/4 del tamaño)
+CROSSOVER_METHODS = {
+    "one_point": one_point.crossover_one_point,
+}
 
-# Parámetros del Algoritmo Genético
-POPULATION_SIZE = 250
-NUM_TRIANGLES = 50
-NUM_GENERATIONS = 5000
-ELITISM_COUNT = 25     # Cuántos de los mejores individuos sobreviven automáticamente
-MUTATION_RATE = 0.8   # Probabilidad de que un nuevo individuo mute
+MUTATION_METHODS = {
+
+}
 
 def main():
     print("Iniciando el compresor de imágenes con Algoritmos Genéticos...")
+
+    # Cargar data de config
+    config = load_config()
+    OUTPUT_DIR = (config["output_dir"])
+    TARGET_IMAGE_PATH = (config["target_image_path"])
+
+    POPULATION_SIZE = (config["pop_size"])
+    NUM_TRIANGLES = (config["num_triangles"])
+    NUM_GENERATIONS = (config["num_generations"])
+    MUTATION_RATE = (config["mutation_rate"])
+    K_SIZE = (config["k"])
+
+    selection_fn = SELECTION_METHODS.get(config["selection_method"])
+    crossover_fn = CROSSOVER_METHODS.get(config["crossover_method"])
+    #mutation_fn = MUTATION_METHODS.get(config["mutation_method"])
+    replacement_strategy = (config["replacement_strategy"])
 
     # Crear directorio de salida si no existe
     if not os.path.exists(OUTPUT_DIR):
         os.makedirs(OUTPUT_DIR)
 
-    # 1. Cargar y preparar la imagen objetivo
+    # Cargar y preparar la imagen objetivo
     print(f"Cargando imagen objetivo desde: {TARGET_IMAGE_PATH}")
     target_image = Image.open(TARGET_IMAGE_PATH).convert("RGB")
-    
-    original_size = target_image.size
-    new_size = (int(original_size[0] * RESIZE_FACTOR), int(original_size[1] * RESIZE_FACTOR))
-    
-    print(f"Redimensionando imagen a {new_size} para un procesamiento más rápido.")
-    target_image = target_image.resize(new_size)
 
-    # 2. Inicializar el Algoritmo Genético
+    # Inicializar el Algoritmo Genético
     ga = GeneticAlgorithm(
         target_image=target_image,
         pop_size=POPULATION_SIZE,
         num_triangles=NUM_TRIANGLES,
-        elitism_count=ELITISM_COUNT,
         mutation_rate=MUTATION_RATE
     )
 
-    # 3. Ciclo evolutivo
+    # Ciclo evolutivo
     print("\n--- Iniciando evolución ---")
-    for i in range(NUM_GENERATIONS):
+    for i in tqdm(range(NUM_GENERATIONS), desc="Evolucionando"):
         print(f"\n--- Generación {i + 1}/{NUM_GENERATIONS} ---")
-        ga.run_generation()
+        ga.run_generation(selection_fn, crossover_fn)
         
         best_ind = ga.get_best_individual()
         
         # Imprimir métricas
-        print(f"Mejor Fitness: {best_ind.fitness:.4f}")
+        print(f"Mejor Fitness: {best_ind.fitness:.10f}")
         
         # Guardar imagen de progreso periódicamente
         if (i + 1) % 25 == 0:
@@ -60,14 +77,13 @@ def main():
             print(f"Guardando progreso en: {output_path}")
             best_ind.image.save(output_path)
 
-    # 4. Guardar el resultado final
+    # Guardar el resultado final
     print("\n--- Evolución finalizada ---")
     final_best = ga.get_best_individual()
     final_output_path = os.path.join(OUTPUT_DIR, "final_result.png")
     
     print(f"Guardando la mejor imagen en: {final_output_path}")
-    # Redimensionamos al tamaño original para una mejor visualización
-    final_best.image.resize(original_size, Image.Resampling.LANCZOS).save(final_output_path)
+    final_best.image.save(final_output_path)
 
     print("\n¡Proceso completado!")
 
