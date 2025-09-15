@@ -13,6 +13,6 @@ def delete_existing_file(filename: str) -> None:
 def write_to_file(filename: str, content: str) -> None:
     """Escribe el contenido en un archivo."""
     dir = BASE_DIR + "/" + filename
-
+    os.makedirs(os.path.dirname(dir), exist_ok=True)
     with open(dir, 'a') as file:
         file.write(content)
