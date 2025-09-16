@@ -9,7 +9,7 @@ path = f'./images/{sys.argv[1]}'
 files = glob.glob(os.path.join(path, "generation_*.png"))
 
 def extract_number(filename):
-    match = re.search(r"generation_roulette_roulette_(\d+)\.png", os.path.basename(filename))
+    match = re.search(r"generation_elitist_one_point_uniform_young_bias_k50_pop250_gen500_(\d+)\.png", os.path.basename(filename))
     return int(match.group(1)) if match else -1
 
 files = sorted(files, key=extract_number)
