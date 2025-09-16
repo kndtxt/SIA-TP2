@@ -37,7 +37,6 @@ class Individual:
     # Mutation in our nation   -b(￣▽￣)d-
     # ༼ つ ◕_◕ ༽つ
 
-
     def mutate_gene(self, mutation_rate):
         """
         Se altera un solo gen (triángulo) aleatorio.
@@ -79,7 +78,7 @@ class Individual:
 
     def mutate_multigen_uniform(self, mutation_rate):
         """
-        Recorro todos los genes, SI SON 4 GENES, NO SON 10 CARACTERISTICAS
+        Recorro todos los genes
         (coordenadas y color de cada triángulo).
         Cada uno tiene probabilidad MUTATION_RATE de mutar.
         """
@@ -115,7 +114,7 @@ class Individual:
 
 
     def mutate_complete(self, mutation_rate):
-        """Mutación Completa: Todos los genes se mutan."""
+        """Todos los genes se mutan."""
         tri = random.choice(self.chromosome)
         if random.random() < mutation_rate:
             tri.points[0] = (
