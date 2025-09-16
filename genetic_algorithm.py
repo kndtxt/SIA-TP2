@@ -54,8 +54,12 @@ class GeneticAlgorithm:
         self.population.sort(key=lambda ind: ind.fitness, reverse=True)
 
     def run_generation(self, selection, crossover, mutation, replacement_strategy, generation_selection, generation=None):
-        """Ejecuta un ciclo completo de una generación."""
-        
+        """
+        Ejecuta un ciclo completo de una generación.
+        """
+
+        print("selection_fn:", selection)
+
         new_population = []
 
         # Creación de nueva descendencia k

@@ -13,6 +13,42 @@ from write_to_file import delete_existing_file, write_to_file
 
 epsilon = 1e-6
 
+sel_meth = ["roulette", "ranking", "tournament_deterministic", 
+            "tournament_probabilistic", "universal", "elitist", 
+            "boltzmann"]
+cross_meth = ["anular", "one_point", "two_point", "uniform", "one_point_fake"]
+mut_meth = ["basic", "uniform", "limited", "complete"]
+rep_strat = ["traditional", "generational", "steady_state"]
+
+
+#change config based on args
+def update_config():
+    with open('./configs/config.json') as f:
+        config = json.load(f)
+    if len(sys.argv) > 2:
+        config["pop_size"] = int(sys.argv[2])
+    if len(sys.argv) > 3:
+        config["k"] = int(sys.argv[3])
+    if len(sys.argv) > 4:
+        config["num_triangles"] = int(sys.argv[4])
+    if len(sys.argv) > 5:
+        config["num_generations"] = int(sys.argv[5])
+    if len(sys.argv) > 6:
+        config["selection_method"] = sys.argv[6]
+    if len(sys.argv) > 6:
+        config["generation_selection_method"] = sys.argv[6]
+    if len(sys.argv) > 7:
+        config["generation_selection_method"] = sys.argv[7]
+    if len(sys.argv) > 8:
+        config["crossover_method"] = sys.argv[8]
+    if len(sys.argv) > 9:
+        config["mutation_method"] = sys.argv[9]
+    if len(sys.argv) > 10:
+        config["replacement_strategy"] = sys.argv[10]
+    with open('./configs/config.json', 'w') as f:
+        json.dump(config, f, indent=4)
+
+
 # Cargar configuración desde JSON
 def load_config(path="./configs/config.json"):
     with open(path, "r") as file:
@@ -50,6 +86,7 @@ best_fitness_threshold = {
 }
 
 def main():
+    update_config()
     print("Iniciando el compresor de imágenes con Algoritmos Genéticos...")
 
     # Cargar data de config
@@ -62,7 +99,8 @@ def main():
     NUM_GENERATIONS = (config["num_generations"])
     MUTATION_RATE = (config["mutation_rate"])
     K_SIZE = (config["k"])
-    name_method = sys.argv[1] if len(sys.argv) > 1 else "default"
+    # name_method = sys.argv[1] if len(sys.argv) > 1 else "default"
+    name_method = f'{config["selection_method"]}_{config["crossover_method"]}_{config["mutation_method"]}_{config["replacement_strategy"]}_k{config["k"]}_pop{config["pop_size"]}_gen{config["num_generations"]}'
 
     selection_fn = SELECTION_METHODS.get(config["selection_method"])
     generation_selection_fn = SELECTION_METHODS.get(config["generation_selection_method"])
