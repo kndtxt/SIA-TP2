@@ -1,6 +1,7 @@
 # main.py
 import os
 import json
+import sys
 from time import time
 from tqdm import tqdm
 from PIL import Image
@@ -61,6 +62,7 @@ def main():
     NUM_GENERATIONS = (config["num_generations"])
     MUTATION_RATE = (config["mutation_rate"])
     K_SIZE = (config["k"])
+    name_method = sys.argv[1] if len(sys.argv) > 1 else "default"
 
     selection_fn = SELECTION_METHODS.get(config["selection_method"])
     generation_selection_fn = SELECTION_METHODS.get(config["generation_selection_method"])
@@ -90,11 +92,11 @@ def main():
         mutation_rate=MUTATION_RATE
     )
 
-    delete_existing_file("fitness_log.txt")
-    delete_existing_file("time_log.txt")
-    write_to_file("fitness_log.txt", "Generación;Mejor Fitness\n")
+    delete_existing_file(f"fitness_log_{name_method}.txt")
+    delete_existing_file(f"time_log_{name_method}.txt")
+    write_to_file(f"fitness_log_{name_method}.txt", "Generación;Mejor Fitness\n")
     start_time = time()
-    write_to_file("time_log.txt", f"Tiempo inicial: {start_time}\n")
+    write_to_file(f"time_log_{name_method}.txt", f"Tiempo inicial: {start_time}\n")
     # Ciclo evolutivo
     print("\n--- Iniciando evolución ---")
     for i in tqdm(range(NUM_GENERATIONS), desc="Evolucionando"):
@@ -115,13 +117,13 @@ def main():
         
         # Guardar imagen de progreso periódicamente
         if (i + 1) % 25 == 0:
-            output_path = os.path.join(OUTPUT_DIR, f"generation_{i+1}.png")
+            output_path = os.path.join(OUTPUT_DIR, f"generation_{name_method}_{i+1}.png")
             os.makedirs(os.path.dirname(output_path), exist_ok=True)
             print(f"Guardando progreso en: {output_path}")
             best_ind.image.save(output_path)
 
         # Impresion a archivo
-        write_to_file("fitness_log.txt", f"{i + 1};{best_ind.fitness:.10f}\n")
+        write_to_file(f"fitness_log_{name_method}.txt", f"{i + 1};{best_ind.fitness:.10f}\n")
 
         if best_fitness_threshold["threshold"] <= best_ind.fitness:
             print(f"Condición de parada alcanzada: Fitness >= {best_fitness_threshold['threshold']}.")
@@ -139,10 +141,10 @@ def main():
     # Guardar el resultado final
     print("\n--- Evolución finalizada ---")
     end_time = time()
-    write_to_file("time_log.txt", f"Tiempo final: {end_time}\n")
-    write_to_file("time_log.txt", f"Tiempo total de ejecución (segundos): {end_time - start_time}\n")
+    write_to_file(f"time_log_{name_method}.txt", f"Tiempo final: {end_time}\n")
+    write_to_file(f"time_log_{name_method}.txt", f"Tiempo total de ejecución (segundos): {end_time - start_time}\n")
     final_best = ga.get_best_individual()
-    final_output_path = os.path.join(OUTPUT_DIR, "final_result.png")
+    final_output_path = os.path.join(OUTPUT_DIR, f"final_result_name_method.png")
     os.makedirs(os.path.dirname(final_output_path), exist_ok=True)
     print(f"Guardando la mejor imagen en: {final_output_path}")
     final_best.image.save(final_output_path)
