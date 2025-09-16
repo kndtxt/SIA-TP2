@@ -94,12 +94,12 @@ class GeneticAlgorithm:
                 # 2. K > N
                 if self.k > self.pop_size:
                     self.population = generation_selection(self, new_population, self.pop_size)
-                    self.calculate_population_fitness()
+                    self.calculate_population_fitness(self.population)
                 #3. K <= N
                 else:
                     old_population = generation_selection(self, self.population, self.pop_size - self.k)
                     self.population = new_population + old_population
-                    self.calculate_population_fitness()
+                    self.calculate_population_fitness(self.population)
             else:
                 raise ValueError(f"Estrategia de reemplazo inválida: {replacement_strategy}")
         
