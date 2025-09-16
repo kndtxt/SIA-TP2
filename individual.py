@@ -55,25 +55,25 @@ class Individual:
         if random.random() < mutation_rate:
             n = random.randint(1, m)
 
-            for tri in self.chromosome:
+            tri = random.choice(self.chromosome)
 
-                gene_types = ["p0", "p1", "p2", "color"]
-                to_mutate = random.sample(gene_types, n)
+            gene_types = ["p0", "p1", "p2", "color"]
+            to_mutate = random.sample(gene_types, n)
 
-                for gtype in to_mutate:
-                    if gtype.startswith("p"):
-                        idx = int(gtype[1])
-                        tri.points[idx] = (
-                            random.randint(0, self.img_width),
-                            random.randint(0, self.img_height)
-                        )
-                    elif gtype == "color":
-                        tri.color = (
-                            random.randint(0, 255),
-                            random.randint(0, 255),
-                            random.randint(0, 255),
-                            random.randint(30, 100)
-                        )
+            for gtype in to_mutate:
+                if gtype.startswith("p"):
+                    idx = int(gtype[1])
+                    tri.points[idx] = (
+                        random.randint(0, self.img_width),
+                        random.randint(0, self.img_height)
+                    )
+                elif gtype == "color":
+                    tri.color = (
+                        random.randint(0, 255),
+                        random.randint(0, 255),
+                        random.randint(0, 255),
+                        random.randint(30, 100)
+                    )
 
             self._image = None
 
@@ -83,64 +83,64 @@ class Individual:
         (coordenadas y color de cada triángulo).
         Cada uno tiene probabilidad MUTATION_RATE de mutar.
         """
-        for tri in self.chromosome:
+        tri = random.choice(self.chromosome)
 
-            if random.random() < mutation_rate:
-                tri.points[0] = (
-                    random.randint(0, self.img_width),
-                    random.randint(0, self.img_height)
-                )
+        if random.random() < mutation_rate:
+            tri.points[0] = (
+                random.randint(0, self.img_width),
+                random.randint(0, self.img_height)
+            )
 
-            if random.random() < mutation_rate:
-                tri.points[1] = (
-                    random.randint(0, self.img_width),
-                    random.randint(0, self.img_height)
-                )
+        if random.random() < mutation_rate:
+            tri.points[1] = (
+                random.randint(0, self.img_width),
+                random.randint(0, self.img_height)
+            )
 
-            if random.random() < mutation_rate:
-                tri.points[2] = (
-                    random.randint(0, self.img_width),
-                    random.randint(0, self.img_height)
-                )
-            
-            if random.random() < mutation_rate:
-                tri.color = (
-                    random.randint(0, 255),  # R
-                    random.randint(0, 255),  # G
-                    random.randint(0, 255),  # B
-                    random.randint(30, 100)   # A
-                )
+        if random.random() < mutation_rate:
+            tri.points[2] = (
+                random.randint(0, self.img_width),
+                random.randint(0, self.img_height)
+            )
+
+        if random.random() < mutation_rate:
+            tri.color = (
+                random.randint(0, 255),  # R
+                random.randint(0, 255),  # G
+                random.randint(0, 255),  # B
+                random.randint(30, 100)  # A
+            )
 
         self._image = None
 
 
     def mutate_complete(self, mutation_rate):
         """Mutación Completa: Todos los genes se mutan."""
-        for tri in self.chromosome:
-            if random.random() < mutation_rate:
-                tri.points[0] = (
-                    random.randint(0, self.img_width),
-                    random.randint(0, self.img_height)
-                )
+        tri = random.choice(self.chromosome)
+        if random.random() < mutation_rate:
+            tri.points[0] = (
+                random.randint(0, self.img_width),
+                random.randint(0, self.img_height)
+            )
 
-                tri.points[1] = (
-                    random.randint(0, self.img_width),
-                    random.randint(0, self.img_height)
-                )
+            tri.points[1] = (
+                random.randint(0, self.img_width),
+                random.randint(0, self.img_height)
+            )
 
-                tri.points[2] = (
-                    random.randint(0, self.img_width),
-                    random.randint(0, self.img_height)
-                )
+            tri.points[2] = (
+                random.randint(0, self.img_width),
+                random.randint(0, self.img_height)
+            )
 
-                tri.color = (
-                    random.randint(0, 255),  # R
-                    random.randint(0, 255),  # G
-                    random.randint(0, 255),  # B
-                    random.randint(30, 100)  # A
-                )
+            tri.color = (
+                random.randint(0, 255),  # R
+                random.randint(0, 255),  # G
+                random.randint(0, 255),  # B
+                random.randint(30, 100)  # A
+            )
 
-        self._image = None
+            self._image = None
     
     def _mutate_one_gene(self):
         """Elige un triángulo al azar y lo muta."""
