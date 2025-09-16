@@ -1,3 +1,0 @@
-Tiempo inicial: 1758013260.406993
-Tiempo final: 1758013348.055661
-Tiempo total de ejecución (segundos): 87.64866805076599
