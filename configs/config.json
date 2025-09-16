@@ -4,15 +4,15 @@
   "num_triangles": 50,
   "mutation_rate": 0.9,
   "num_generations": 2000,
-  "selection_method": "boltzmann",
+  "selection_method": "roulette",
   "generation_selection_method": "elitist",
   "crossover_method": "one_point",
   "mutation_method": "basic",
   "replacement_strategy": "traditional",
   "target_image_path": "images/input.png",
   "output_dir": "images/out",
-  "FITNESS_THRESHOLD": 0.09,
+  "FITNESS_THRESHOLD": 0.9,
   "boltzmann_initial_temp": 1000,
   "boltzmann_final_temp": 1,
-  "boltzmann_decay": 0.05
+  "boltzmann_decay": 1
 }
