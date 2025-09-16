@@ -69,6 +69,7 @@ def main():
     replacement_strategy = (config["replacement_strategy"])
 
     # Condiciones de corte
+    #gets fitness threshold from config if exists -> else default value
     best_fitness_threshold["threshold"] = config.get("FITNESS_THRESHOLD", best_fitness_threshold["threshold"])
     prev_best_fitness = -1.0
 
@@ -98,8 +99,15 @@ def main():
     print("\n--- Iniciando evolución ---")
     for i in tqdm(range(NUM_GENERATIONS), desc="Evolucionando"):
         print(f"\n--- Generación {i + 1}/{NUM_GENERATIONS} ---")
-        ga.run_generation(selection_fn, crossover_fn, mutation_fn, replacement_strategy, generation_selection_fn)
-        
+        if(config["selection_method"] == "boltzmann"):
+
+            #boltzmann necesita la generacion actual para el calculo de temperatura
+            ga.run_generation(selection=selection_fn, crossover=crossover_fn, mutation=mutation_fn, 
+                              replacement_strategy=replacement_strategy, generation_selection=generation_selection_fn, generation=i)
+        else:
+            ga.run_generation(selection=selection_fn, crossover=crossover_fn, mutation=mutation_fn, 
+                              replacement_strategy=replacement_strategy, generation_selection=generation_selection_fn)
+
         best_ind = ga.get_best_individual()
         
         # Imprimir métricas

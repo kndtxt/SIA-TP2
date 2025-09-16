@@ -4,7 +4,11 @@ from typing import List
 from tqdm import tqdm # Para la barra de progreso
 from individual import Individual
 import multiprocessing
+import json
 
+with open('./configs/config.json') as f:
+    config = json.load(f)
+    selection_method_config = config["selection_method"]
 class GeneticAlgorithm:
     """
     Motor del algoritmo genético para evolucionar imágenes.
@@ -49,13 +53,16 @@ class GeneticAlgorithm:
         """Ordena la población por fitness, de mejor a peor."""
         self.population.sort(key=lambda ind: ind.fitness, reverse=True)
 
-    def run_generation(self, selection, crossover, mutation, replacement_strategy, generation_selection):
+    def run_generation(self, selection, crossover, mutation, replacement_strategy, generation_selection, generation=None):
         """Ejecuta un ciclo completo de una generación."""
         
         new_population = []
 
         # Creación de nueva descendencia k
-        parents = selection(self, self.population, self.k)
+        if(generation is not None):
+            parents = selection(self, self.population, self.k, generation)
+        else:
+            parents = selection(self, self.population, self.k)
         children = crossover(self, parents)
         children = children[:self.k]
 
