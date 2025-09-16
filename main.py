@@ -117,7 +117,7 @@ def main():
         
         # Guardar imagen de progreso periódicamente
         if (i + 1) % 25 == 0:
-            output_path = os.path.join(OUTPUT_DIR, f"generation_{name_method}_{i+1}.png")
+            output_path = os.path.join(OUTPUT_DIR + name_method, f"generation_{name_method}_{i+1}.png")
             os.makedirs(os.path.dirname(output_path), exist_ok=True)
             print(f"Guardando progreso en: {output_path}")
             best_ind.image.save(output_path)

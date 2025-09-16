@@ -5,7 +5,7 @@
   "mutation_rate": 0.9,
   "num_generations": 2000,
   "selection_method": "roulette",
-  "generation_selection_method": "elitist",
+  "generation_selection_method": "roulette",
   "crossover_method": "one_point",
   "mutation_method": "basic",
   "replacement_strategy": "traditional",

@@ -3,3 +3,4 @@ Pillow
 numpy
 tqdm
 matplotlib
+imageio
