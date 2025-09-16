@@ -60,7 +60,7 @@ def plot_combined(datasets, out_path):
         plt.plot(xs, ys, label=name)
     plt.xlabel("Generación")
     plt.ylabel("Mejor Fitness")
-    plt.title("Mejor Fitness por Generación (varios datasets)")
+    plt.title("Mejor Fitness por Generación")
     plt.grid(True)
     plt.legend(ncol=1, fontsize="small")
     plt.tight_layout()
